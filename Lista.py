@@ -1,117 +1,167 @@
+#SARA VEGA 30196982
+
 class Nodo:
-    def __init__(self, valor):
-        # Inicializa un nodo con un valor y un puntero a None
-        self.info = valor
-        self.prox = None
+    def __init__(self, valor=None):
+        self.info = valor  # Almacena el valor del nodo
+        self.prox = None   # Referencia al siguiente nodo (esto simula el puntero
 
 class Lista:
     def __init__(self):
-        # Inicializa la lista con el primer nodo como None
-        self.primero = None
+        self.Primero = None  
 
-    def vacia(self):
-        # Verifica si la lista está vacía
-        return self.primero is None
+    def Vacia(self):
+        #Verifica si la lista esta vacia
+        return self.Primero is None
 
-    def llena(self):
-        # Intenta crear un nuevo nodo para verificar si hay memoria disponible
+    def Llena(self):
+        #Simula la comprobacion de memoria
         try:
-            _ = Nodo(None)  # Intentar crear un nodo
-            return False
+            nuevo = Nodo() 
+            return False  # Si no hay error entonces no esta llena
         except MemoryError:
-            return True  # Si no se puede crear, la lista está llena
+            return True  # Si ocurre un error de memoria entonces la lista esta llena
 
-    def ins_comienzo(self, valor):
-        # Inserta un nuevo nodo al comienzo de la lista
-        if not self.llena():
-            nuevo = Nodo(valor)  # Crea un nuevo nodo
-            nuevo.prox = self.primero  # El nuevo nodo apunta al antiguo primero
-            self.primero = nuevo  # Actualiza el primero a ser el nuevo nodo
+    def InsComienzo(self, valor):
+        #Inserta un valor al principio de la lista
+        if not self.Llena():
+            nuevo = Nodo(valor)  
+            nuevo.prox = self.Primero  # El puntero 'prox' apunta al primer nodo
+            self.Primero = nuevo  # El nuevo nodo pasa a ser el primer nodo
             return True
-        return False  # No se pudo insertar porque la lista está llena
+        return False
 
-    def eli_comienzo(self):
-        # Elimina el nodo al comienzo de la lista y devuelve su valor
-        if not self.vacia():
-            viejo = self.primero  # Guarda el nodo a eliminar
-            self.primero = self.primero.prox  # Actualiza el primero al siguiente nodo
-            return viejo.info  # Devuelve el valor del nodo eliminado
-        return None  # No se pudo eliminar porque la lista está vacía
-    
-    def ins_despues(self, indice, valor):
-        #Inserta elemento despues del nodo X
-        if (indice < 0 or indice > self.contar()):
-            raise Exception("Indice inválido") #Si el indice no se encuentra, entrega excepción
-        elif (indice == 0):
-            self.ins_comienzo(valor) #Si el indice es 0, inserta al comienzo
-            return
-        else:
-            cont = 0    #Contador para recorrer la lista
-            ins_der = self.primero #Se llama al primer nodo
-            #Recorre la lista hasta el nodo indicado
-            while ins_der:
-                if (cont == indice - 1):
-                    #Si el contador es igual al indice, se inserta el nuevo nodo
-                    nuevo = Nodo(valor)
-                    # El valor del nuevo nodo apunta al siguiente nodo (tomado del nodo indicado)
-                    nuevo.prox = ins_der.prox
-                    # El nodo indicado apunta al nuevo nodo que se ha creado
-                    ins_der.prox = nuevo
-                    # Se sale del bucle
-                    break
-                # Si no se encuentra el nodo indicado, se avanza al siguiente nodo
-                # y se incrementa el contador
-                ins_der = ins_der.prox
-                cont += 1
-    
-    def eli_despues(self, indice):
-        #Elimina elemento despues del nodo X
-        if (indice < 0 or indice >= self.contar()): #Si el indice no se encuentra, entrega excepción
-            raise Exception("Indice inválido")
-        elif (indice == 0):
-            self.eli_comienzo() #Si el indice es 0, elimina el primer nodo
-        else:
-            cont = 0    #Contador para recorrer la lista
-            eli_der = self.primero #Se llama al primer nodo
-            #Recorre la lista hasta el nodo indicado
-            while eli_der:
-                if (cont == indice -1):
-                    #Si el contador es igual al indice, se elimina el siguiente nodo
-                    eli_der.prox = eli_der.prox.prox
-                    break
-                # Si no se encuentra el nodo indicado, se avanza al siguiente nodo
-                # y se incrementa el contador
-                eli_der = eli_der.prox
-                cont += 1
+    def EliComienzo(self):
+        #Elimina el primer nodo de la lista
+        if not self.Vacia():
+            viejo = self.Primero  # Tomamos el primer nodo
+            valor = viejo.info  # Aqui recuperamos su valor
+            self.Primero = self.Primero.prox  # El primero apunta al siguiente nodo
+            del viejo  # El nodo es eliminado (simulacion de delete)
+            return valor
+        return None  #Si la listaesta vacia no se puede eliminar
 
-    def contar(self):
-        # Cuenta el número de nodos en la lista
+    def InsDespues(self, p, valor):
+        #Inserta un valor despues del nodo p
+        if not self.Llena() and p is not None:
+            nuevo = Nodo(valor)
+            nuevo.prox = p.prox  # El nuevo nodo apunta al siguiente de p
+            p.prox = nuevo  # El nodo p apunta al nuevo nodo
+            return True
+        return False
+
+    def EliDespues(self, p):
+        #Elimina el nodo despues de p
+        if p is None or p.prox is None:
+            return None  # Si p es None o p no tiene siguiente entonces no se puede eliminar
+        viejo = p.prox  # El siguiente nodo de p
+        valor = viejo.info  # Aqui recuperamos el valor del nodo a eliminar
+        p.prox = viejo.prox  # El nodo p apunta al siguiente de viejo
+        del viejo  # El nodo es eliminado
+        return valor
+
+    def ObtProx(self, p):
+        #Obtiene el siguiente nodo despues de p"
+        return p.prox if p is not None else None
+
+    def AsigProx(self, p, q):
+        #Asigna el siguiente nodo de p a q
+        if p is not None:
+            p.prox = q
+
+    def ObtInfo(self, p):
+        #Obtiene la informacion almacenada en el nodo "p"
+        return p.info if p is not None else None
+
+    def AsigInfo(self, p, valor):
+        #Asigna un valor al nodo p"
+        if p is not None:
+            p.info = valor
+
+    def Contar(self):
+        #Cuenta cuántos elementos tiene la lista
         cont = 0
-        p = self.primero
+        p = self.Primero
         while p is not None:
-            cont += 1  # Incrementa el contador por cada nodo
-            p = p.prox  # Avanza al siguiente nodo
-        return cont  # Devuelve el total de nodos
+            cont += 1
+            p = p.prox
+        return cont
 
-    def buscar(self, valor):
-        # Busca un nodo con un valor específico y lo devuelve
-        aux = self.primero
-        while aux is not None:
-            if aux.info == valor:  # Si se encuentra el valor
-                return aux  # Devuelve el nodo encontrado
-            aux = aux.prox  # Avanza al siguiente nodo
-        return None  # No se encontró el valor
+    def Buscar(self, valor):
+        #Busca un valor en la lista
+        p = self.Primero
+        while p is not None:
+            if p.info == valor:
+                return p
+            p = p.prox
+        return None  # Si no se encuentra el valor devuelve None
+    def MostrarContenido(self):
+        if self.Vacia():
+            print("La Lista está vacía.")
+        else:
+            p = self.Primero
+            print("Contenido de la Lista:")
+            while p is not None:
+                print(p.info)
+                p = p.prox
+    def pasarListaAux(self, listaFuente, listaDestino):
+        #Pasa todos los elementos de una lista a otra
+        valor = None
+        while not listaFuente.Vacia():
+            valor = listaFuente.EliComienzo()  # Elimina el primer valor de la listaFuente
+            listaDestino.InsComienzo(valor)  # Inserta el valor al principio de listaDestino
 
-    def pasar_lista_aux(self, lista_fuente, lista_destino):
-        # Transfiere todos los nodos de lista_fuente a lista_destino
-        while not lista_fuente.vacia():
-            valor = lista_fuente.eli_comienzo()  # Elimina el primer nodo de lista_fuente
-            lista_destino.ins_comienzo(valor)  # Inserta el valor en lista_destino
-    def mostrar(self):
-        #Muestra por pantalla los elementos de la lista
-        print("Lista:")
-        actual = self.primero
-        while actual:
-            print(actual.info, end=" -> ")
-            actual = actual.prox
-        print("Null")
+    def __del__(self):
+        #Destructor para liberar los recursos cuando la lista es destruida"""
+        while not self.Vacia():
+            self.EliComienzo()  # Elimina todos los elementos de la lista
+
+# esta seccion es para verificar elfuncionamiento de la lista
+if __name__ == "__main__":
+   
+    mi_lista = Lista()
+
+    # Verificar si la lista esta vacia
+    print("¿Está la lista vacía?", mi_lista.Vacia())  # Deberia imprimir True
+
+    # Insertar elementos
+    print("Insertando 10 al principio:", mi_lista.InsComienzo(10))  # Deberia devolver True
+    print("Insertando 20 al principio:", mi_lista.InsComienzo(20))  # Deberia devolver True
+    print("Insertando 30 al principio:", mi_lista.InsComienzo(30))  # Deberia devolver True
+
+    # Verificar si la lista esta vacaa despues de haber hecho insertos
+    print("¿Está la lista vacía?", mi_lista.Vacia())  # Deberia imprimir un False
+
+    # Contar elementos de la lista
+    print("Cantidad de elementos en la lista:", mi_lista.Contar())  # Deberia imprimir un 3
+
+    # Buscar un elemento
+    nodo = mi_lista.Buscar(20)
+    if nodo:
+        print("Elemento 20 encontrado:", nodo.info)  # Deberia imprimir 20
+
+    # Eliminar el primer elemento de la lista
+    print("Eliminando primer elemento:", mi_lista.EliComienzo())  # Deberia devolver un 30
+
+    # Insertar un nuevo valor despues de un nodo
+    nodo = mi_lista.Primero  # El primer nodo de la lista
+    print("Insertando 25 después de", nodo.info)
+    mi_lista.InsDespues(nodo, 25)  # Insertamos 25 despues del primer nodo
+
+    # Mostrar el contenido de la lista
+    p = mi_lista.Primero
+    print("Contenido de la lista:")
+    while p is not None:
+        print(p.info, end=" ")
+        p = p.prox
+    print() 
+
+    # Eliminar el ultimo elemento de la lista
+    print("Eliminando después del primer nodo:", mi_lista.EliDespues(mi_lista.Primero))  # Deberia devolver un 25
+
+    # Mostrar el contenido final de la lista
+    p = mi_lista.Primero
+    print("Contenido de la lista final:")
+    while p is not None:
+        print(p.info, end=" ")
+        p = p.prox
+    print()  
