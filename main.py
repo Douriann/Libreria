@@ -1,5 +1,5 @@
 
-#SARA VEGA 30196982
+
 
 from Pila import Pila, NodoPila
 from Colas import Cola, Nodo
