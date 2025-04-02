@@ -1,4 +1,4 @@
-#SARA VEGA 30196982
+
 
 class NodoPila:
     def __init__(self, valor=None):
