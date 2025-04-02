@@ -8,7 +8,10 @@ def mostrar_menu():
     print("4. Buscar elemento (Lista 1)")
     print("5. Transferir todos a Lista 2")
     print("6. Mostrar estado de listas")
-    print("7. Salir")
+    print("7. Mostrar elementos de las lista (Lista 1)")
+    print("8. Insertar elemento despues del nodo X (Lista 1)")
+    print("9. Eliminar elemento despues del nodo X (Lista 1)")
+    print("10. Salir")
 
 def mostrar_estado(lista1, lista2):
     print("\n=== Estado Actual ===")
@@ -52,8 +55,28 @@ if __name__ == "__main__":
                 
             elif opcion == 6:
                 mostrar_estado(lista1, lista2)
-                
+
             elif opcion == 7:
+                lista1.mostrar()
+
+            elif opcion == 8:
+                indice = int(input("Ingrese el índice del nodo que desea seleccionar: "))
+                valor = int(input("Ingrese el valor a insertar: "))
+                try:
+                    lista1.ins_despues(indice, valor)
+                    print(f"✅ {valor} insertado después del nodo {indice}")
+                except Exception as e:
+                    print(f"❌ Error: {e}")
+                
+            elif opcion == 9:
+                indice = int(input("Ingrese el índice del nodo que desea seleccionar: "))
+                try:
+                    lista1.eli_despues(indice)
+                    print(f"🗑️ Elemento eliminado después del nodo {indice}")
+                except Exception as e:
+                    print(f"❌ Error: {e}")
+                
+            elif opcion == 10:
                 print("👋 Saliendo del programa...")
                 break
                 
