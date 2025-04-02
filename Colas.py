@@ -1,4 +1,4 @@
-#SARA VEGA 30196982
+
 class Nodo:
     def __init__(self, valor=None):
         self.info = valor  # Valor del nodo
