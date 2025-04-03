@@ -54,21 +54,6 @@ class Cola:
                 self.Final = None
             return valor
         return None  # Si la cola está vacía, no hay nada que remover
-    
-# Seccion para verificar el funcionamiento de la cola
-mi_cola = Cola()
 
-
-mi_cola.Insertar(10)
-mi_cola.Insertar(20)
-mi_cola.Insertar(30)
-
-
-print(mi_cola.Remover())  # Deberia imprimir 10
-print(mi_cola.Remover())  # Deberia imprimir 20
-print(mi_cola.Remover())  # Deberia imprimir 30
-
-# Comprobar si la cola esta vacia
-print(mi_cola.Vacia())  # Deberia imprimir True
 
 
