@@ -3,7 +3,6 @@ from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
 from graphviz import Digraph
 import os
-
 from Lista import Lista 
 
 class VistaListaApp:
@@ -178,8 +177,8 @@ class VistaListaApp:
         self.filtrar_ingresados()
         self.filtrar_no_ingresados()
         self.actualizar_grafo()
-        self.contador_ingresados.config(text=f"Total Ingresados: {self.lista_ingresados.Contar()}")
-        self.contador_no_ingresados.config(text=f"Total No Ingresados: {self.lista_no_ingresados.Contar()}")
+        self.contador_ingresados.config(text=f"Total de Ingresados: {self.lista_ingresados.Contar()}")
+        self.contador_no_ingresados.config(text=f"Total de No Ingresados: {self.lista_no_ingresados.Contar()}")
 
     def actualizar_grafo(self):
         dot = Digraph(format='png')
