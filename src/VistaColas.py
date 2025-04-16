@@ -1,13 +1,13 @@
 import tkinter as tk
 from tkinter import messagebox
-from Colas import Cola  # Importa tu clase Cola (ajusta el nombre del archivo)
+from Colas import Cola 
 
 # Configuración de la ventana
 ventana = tk.Tk()
 ventana.title("Visualización de Cola")
 ventana.geometry("800x400")
 
-# Crear una instancia de tu Cola
+# Crear una instancia de Cola
 cola = Cola()
 
 # Canvas para dibujar la cola
