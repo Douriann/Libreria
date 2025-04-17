@@ -66,35 +66,3 @@ class Pila:
     def AsigInfo(self, nodo, valor):
         #Asigna un nuevo valor al nodo
         nodo.info = valor
-
-
-# Seccion para verificar el funcionamiento de la pila
-if __name__ == "__main__":
-   
-    mi_pila = Pila()
-
-    # Verificar si la pila esta vacia
-    print("¿Está la pila vacía?", mi_pila.Vacia())  # deberia imprimir True
-
-    # Insertar elementos
-    print("Insertando 10:", mi_pila.Insertar(10))  # deberia devolver True
-    print("Insertando 20:", mi_pila.Insertar(20))  # deberia devolver True
-    print("Insertando 30:", mi_pila.Insertar(30))  # deberia devolver True
-
-    # Verificar si la pila esta vacia despues de que se agrego 10,20,30
-    print("¿Está la pila vacía?", mi_pila.Vacia())  # Deberia imprimir False
-
-    # Obtener el tope de la pila
-    tope = mi_pila.ObtTope()
-    print("Tope de la pila:", tope.info)  # deberia imprimir un 30
-
-    # Remover elementos de la pila
-    print("Remover valor:", mi_pila.Remover())  # deberia devolver 30
-    print("Remover valor:", mi_pila.Remover())  # deberia devolver 20
-    print("Remover valor:", mi_pila.Remover())  # deberia devolver 10
-
-    # Verificar si la pila esta vacia despues de las eliminaciones que se hicieron
-    print("¿Esta vacia la pila ?", mi_pila.Vacia())  # deberia imprimir True
-
-    # Intentar remover un elemento de una pila vacia
-    print("Intentando remover de una pila vacía:", mi_pila.Remover())  # deberia devolver None
