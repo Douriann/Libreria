@@ -8,7 +8,7 @@ class Estudiante:
 
     def mostrar_informacion(self):
         print(f"Nombre: {self.nombre}, Edad: {self.edad}, Carrera: {self.carrera}")
-
+# mostrar_informacion(self):
     def describir_razon(self):
         if self.razon_solicitud == "1":
             razon = "Inclusión de materia"

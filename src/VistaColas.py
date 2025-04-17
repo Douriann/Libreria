@@ -3,7 +3,7 @@ from tkinter import messagebox
 from Colas import Cola 
 from EstudianteC import Estudiante
 
-# Configuración de la ventana
+# Configuración de la ventanaa
 ventana = tk.Tk()
 ventana.title("Visualización de Cola")
 ventana.geometry("800x400")
