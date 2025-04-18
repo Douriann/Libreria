@@ -6,7 +6,7 @@ from EstudianteC import Estudiante
 # Configuración de la ventanaa
 ventana = tk.Tk()
 ventana.title("Visualización de Cola")
-ventana.geometry("800x400")
+ventana.geometry("800x500")
 
 # Crear una instancia de Cola
 cola = Cola()
@@ -17,6 +17,7 @@ def dibujar_cola():
     
     if cola.Vacia():
         canvas.create_text(375, 150, text="[La cola está vacía]", font=("Arial", 14))
+        anuncio.config(text="No hay estudiantes en la cola", fg="black")
         return
     
     x = 100  # Posición inicial en X
@@ -36,11 +37,21 @@ def dibujar_cola():
         # Resaltar Frente (rojo) y Final (verde)
         if p == cola.Frente:
             canvas.create_text(x+30, y-50, text="Frente", fill="red", font=("Arial", 10, "bold"))
+            mostrar_estudiante_atendido(p.info)
         if p == cola.Final:
             canvas.create_text(x+30, y+50, text="Final", fill="green", font=("Arial", 10, "bold"))
         
         x += separacion
         p = p.prox
+        
+# Función para mostrar información del estudiante siendo atendido
+def mostrar_estudiante_atendido(estudiante):
+    razon = estudiante.describir_razon()  
+    mensaje = f"El estudiante esta siendo atendido:\n" \
+              f"Cédula: {estudiante.cedula}\n" \
+              f"Nombre: {estudiante.nombre}\n" \
+              f"Razón: {razon}"
+    anuncio.config(text=mensaje, fg="blue")
 
 # Función para insertar un elemento en la cola
 def insertar():
@@ -77,12 +88,19 @@ def remover():
     if cola.Vacia():
         messagebox.showinfo("Info", "La cola está vacía.")
     else:
-        cola.Remover()
+        estudiante_removido = cola.Remover()
+        if estudiante_removido:
+            messagebox.showinfo("Info", f"Se atendió al estudiante: {estudiante_removido.cedula}")
         dibujar_cola()
 
 # Canvas para dibujar la cola
 canvas = tk.Canvas(ventana, width=750, height=300, bg="white")
 canvas.pack(pady=20)
+
+# Etiqueta para mostrar el anuncio del estudiante siendo atendido
+anuncio = tk.Label(ventana, text="No hay estudiantes en la cola", 
+font=("Arial", 12), fg="black", justify=tk.LEFT)
+anuncio.pack(pady=10)
 
 # Creando un frame (contenedor) para los botones y entradas
 # y organizando su disposición
