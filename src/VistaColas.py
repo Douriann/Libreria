@@ -1,9 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
-from Colas import Cola 
+from Colas import Cola
 from EstudianteC import Estudiante
 
-# Configuración de la ventanaa
+# Configuración de la ventana
 ventana = tk.Tk()
 ventana.title("Visualización de Cola")
 ventana.geometry("800x500")
@@ -14,43 +14,47 @@ cola = Cola()
 # Función para dibujar la cola
 def dibujar_cola():
     canvas.delete("all")  # Limpiar el canvas antes de redibujar
-    
+
     if cola.Vacia():
         canvas.create_text(375, 150, text="[La cola está vacía]", font=("Arial", 14))
         anuncio.config(text="No hay estudiantes en la cola", fg="black")
+        canvas.config(scrollregion=canvas.bbox("all")) # Ajustar scrollregion incluso cuando está vacía
         return
-    
+
     x = 100  # Posición inicial en X
     y = 150  # Posición fija en Y
     separacion = 100  # Espacio entre nodos
-    
+
     p = cola.Frente
     while p is not None:
         # Dibujar nodo (círculo + texto)
         canvas.create_oval(x, y-30, x+80, y+30, fill="lightblue")
         canvas.create_text(x+40, y, text=str(p.info.cedula), font=("Arial", 12))
-        
+
         # Dibujar flecha si hay un nodo siguiente
         if p.prox is not None:
             canvas.create_line(x+80, y, x+separacion, y, arrow=tk.LAST)
-        
+
         # Resaltar Frente (rojo) y Final (verde)
         if p == cola.Frente:
             canvas.create_text(x+40, y-50, text="Frente", fill="red", font=("Arial", 10, "bold"))
             mostrar_estudiante_atendido(p.info)
         if p == cola.Final:
             canvas.create_text(x+40, y+50, text="Final", fill="green", font=("Arial", 10, "bold"))
-        
+
         x += separacion
         p = p.prox
-        
+
+    # Actualizar la región de desplazamiento del canvas para que abarque todo el contenido
+    canvas.config(scrollregion=canvas.bbox("all"))
+
 # Función para mostrar información del estudiante siendo atendido
 def mostrar_estudiante_atendido(estudiante):
-    razon = estudiante.describir_razon()  
+    razon = estudiante.describir_razon()
     mensaje = f"El estudiante esta siendo atendido:\n" \
-              f"Cédula: {estudiante.cedula}\n" \
-              f"Nombre: {estudiante.nombre}\n" \
-              f"Razón: {razon}"
+                f"Cédula: {estudiante.cedula}\n" \
+                f"Nombre: {estudiante.nombre}\n" \
+                f"Razón: {razon}"
     anuncio.config(text=mensaje, fg="black")
 
 # Función para insertar un elemento en la cola
@@ -93,14 +97,24 @@ def remover():
             messagebox.showinfo("Info", f"Se atendió al estudiante: {estudiante_removido.cedula}")
         dibujar_cola()
 
-# Canvas para dibujar la cola
-canvas = tk.Canvas(ventana, width=750, height=250, bg="white")
+# Crear barra de desplazamiento
+
+barra_horizontal = tk.Scrollbar(ventana, orient=tk.HORIZONTAL)
+barra_horizontal.pack(side=tk.BOTTOM, fill=tk.X)
+
+# Canvas para dibujar la cola y asociar la barra de desplazamiento
+canvas = tk.Canvas(ventana, width=750, height=250, bg="white",
+                   xscrollcommand=barra_horizontal.set)
 canvas.pack(pady=20)
 
+# Configurar el comportamiento de la barra de desplazamiento
+barra_horizontal.config(command=canvas.xview)
+
 # Etiqueta para mostrar el anuncio del estudiante siendo atendido
-anuncio = tk.Label(ventana, text="No hay estudiantes en la cola", 
+anuncio = tk.Label(ventana, text="No hay estudiantes en la cola",
 font=("Arial", 12), fg="black", justify=tk.LEFT)
 anuncio.place(x=500, y=300) #OJO, cambiar la posición de la etiqueta para que no se superponga con el canvas
+
 # Creando un frame (contenedor) para los botones y entradas
 # y organizando su disposición
 frame_botones = tk.Frame(ventana)
