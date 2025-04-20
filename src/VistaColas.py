@@ -7,6 +7,7 @@ from EstudianteC import Estudiante
 ventana = tk.Tk()
 ventana.title("Visualización de Cola")
 ventana.geometry("800x500")
+ventana.resizable(0,0) # Impidiendo redimensión de la ventana
 
 # Crear una instancia de Cola
 cola = Cola()
@@ -43,6 +44,7 @@ def dibujar_cola():
         
         x += separacion
         p = p.prox
+        canvas.config(scrollregion=canvas.bbox("all"))
         
 # Función para mostrar información del estudiante siendo atendido
 def mostrar_estudiante_atendido(estudiante):
@@ -93,9 +95,18 @@ def remover():
             messagebox.showinfo("Info", f"Se atendió al estudiante: {estudiante_removido.cedula}")
         dibujar_cola()
 
+#Creando el frame para el canvas
+frame_canvas = tk.Frame(ventana)
+frame_canvas.pack(side=tk.TOP)
+
+# Creando scrollbar para el canvas
+scrollbar_horizontal = tk.Scrollbar(frame_canvas, orient=tk.HORIZONTAL)
+scrollbar_horizontal.pack(side=tk.BOTTOM, fill=tk.X)
+
 # Canvas para dibujar la cola
-canvas = tk.Canvas(ventana, width=750, height=250, bg="white")
-canvas.pack(pady=20)
+canvas = tk.Canvas(frame_canvas, width=750, height=250, bg="white", xscrollcommand=scrollbar_horizontal.set)
+canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+scrollbar_horizontal.config(command=canvas.xview)
 
 # Etiqueta para mostrar el anuncio del estudiante siendo atendido
 anuncio = tk.Label(ventana, text="No hay estudiantes en la cola", 
