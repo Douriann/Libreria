@@ -7,6 +7,7 @@ from EstudianteC import Estudiante
 ventana = tk.Tk()
 ventana.title("Visualización de Cola")
 ventana.geometry("800x500")
+ventana.resizable(0,0) #Negando redimención de la ventana
 
 # Crear una instancia de Cola
 cola = Cola()
@@ -97,15 +98,19 @@ def remover():
             messagebox.showinfo("Info", f"Se atendió al estudiante: {estudiante_removido.cedula}")
         dibujar_cola()
 
+#Creando un frame para el canvas
+
+frame_canvas = tk.Frame(ventana)
+frame_canvas.pack(side=tk.TOP, pady=10)
+
 # Crear barra de desplazamiento
 
-barra_horizontal = tk.Scrollbar(ventana, orient=tk.HORIZONTAL)
+barra_horizontal = tk.Scrollbar(frame_canvas, orient=tk.HORIZONTAL)
 barra_horizontal.pack(side=tk.BOTTOM, fill=tk.X)
 
 # Canvas para dibujar la cola y asociar la barra de desplazamiento
-canvas = tk.Canvas(ventana, width=750, height=250, bg="white",
-                   xscrollcommand=barra_horizontal.set)
-canvas.pack(pady=20)
+canvas = tk.Canvas(frame_canvas, width=750, height=250, bg="white", xscrollcommand=barra_horizontal.set)
+canvas.pack( fill=tk.X, expand=True)
 
 # Configurar el comportamiento de la barra de desplazamiento
 barra_horizontal.config(command=canvas.xview)
@@ -119,6 +124,7 @@ anuncio.place(x=500, y=300) #OJO, cambiar la posición de la etiqueta para que n
 # y organizando su disposición
 frame_botones = tk.Frame(ventana)
 frame_botones.pack(side=tk.BOTTOM, pady=10)
+frame_botones.config(cursor="hand2") # Modificando el cursor de los botones
 frame_entrada = tk.Frame(ventana)
 frame_entrada.pack(anchor="w", padx=10)
 
