@@ -7,6 +7,7 @@ from EstudianteC import Estudiante
 ventana = tk.Tk()
 ventana.title("Visualización de Cola")
 ventana.geometry("800x500")
+ventana.resizable(0,0) # Impidiendo redimensión de la ventana
 ventana.resizable(0,0) #Negando redimención de la ventana
 
 # Crear una instancia de Cola
@@ -45,6 +46,7 @@ def dibujar_cola():
 
         x += separacion
         p = p.prox
+        canvas.config(scrollregion=canvas.bbox("all"))
 
     # Actualizar la región de desplazamiento del canvas para que abarque todo el contenido
     canvas.config(scrollregion=canvas.bbox("all"))
@@ -98,22 +100,18 @@ def remover():
             messagebox.showinfo("Info", f"Se atendió al estudiante: {estudiante_removido.cedula}")
         dibujar_cola()
 
-#Creando un frame para el canvas
-
+#Creando el frame para el canvas
 frame_canvas = tk.Frame(ventana)
-frame_canvas.pack(side=tk.TOP, pady=10)
+frame_canvas.pack(side=tk.TOP)
 
-# Crear barra de desplazamiento
+# Creando scrollbar para el canvas
+scrollbar_horizontal = tk.Scrollbar(frame_canvas, orient=tk.HORIZONTAL)
+scrollbar_horizontal.pack(side=tk.BOTTOM, fill=tk.X)
 
-barra_horizontal = tk.Scrollbar(frame_canvas, orient=tk.HORIZONTAL)
-barra_horizontal.pack(side=tk.BOTTOM, fill=tk.X)
-
-# Canvas para dibujar la cola y asociar la barra de desplazamiento
-canvas = tk.Canvas(frame_canvas, width=750, height=250, bg="white", xscrollcommand=barra_horizontal.set)
-canvas.pack( fill=tk.X, expand=True)
-
-# Configurar el comportamiento de la barra de desplazamiento
-barra_horizontal.config(command=canvas.xview)
+# Canvas para dibujar la cola
+canvas = tk.Canvas(frame_canvas, width=750, height=250, bg="white", xscrollcommand=scrollbar_horizontal.set)
+canvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+scrollbar_horizontal.config(command=canvas.xview)
 
 # Etiqueta para mostrar el anuncio del estudiante siendo atendido
 anuncio = tk.Label(ventana, text="No hay estudiantes en la cola",
