@@ -8,7 +8,6 @@ ventana = tk.Tk()
 ventana.title("Visualización de Cola")
 ventana.geometry("800x500")
 ventana.resizable(0,0) # Impidiendo redimensión de la ventana
-ventana.resizable(0,0) #Negando redimención de la ventana
 
 # Crear una instancia de Cola
 cola = Cola()
@@ -47,10 +46,7 @@ def dibujar_cola():
         x += separacion
         p = p.prox
         canvas.config(scrollregion=canvas.bbox("all"))
-
-    # Actualizar la región de desplazamiento del canvas para que abarque todo el contenido
-    canvas.config(scrollregion=canvas.bbox("all"))
-
+        
 # Función para mostrar información del estudiante siendo atendido
 def mostrar_estudiante_atendido(estudiante):
     razon = estudiante.describir_razon()
