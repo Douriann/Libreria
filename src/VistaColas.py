@@ -19,7 +19,6 @@ def dibujar_cola():
     if cola.Vacia():
         canvas.create_text(375, 150, text="[La cola está vacía]", font=("Arial", 14))
         anuncio.config(text="No hay estudiantes en la cola", fg="black")
-        canvas.config(scrollregion=canvas.bbox("all")) # Ajustar scrollregion incluso cuando está vacía
         return
 
     x = 100  # Posición inicial en X
