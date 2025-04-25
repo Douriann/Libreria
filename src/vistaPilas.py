@@ -133,7 +133,7 @@ class VersionControlApp:
         if version:
             self.contador_versiones -= 1
             messagebox.showinfo("Revertido", 
-                f"Versión {version.info['id']} revertida")
+                f"Versión {version['id']} revertida")  # Cambia aquí
             self.actualizar_interfaz()
         else:
             messagebox.showwarning("Error", "No hay versiones para revertir")
@@ -152,26 +152,11 @@ class VersionControlApp:
         self.text_historial.config(state=tk.NORMAL)
         self.text_historial.delete(1.0, tk.END)
         
-        if self.pila.Vacia():
+        contenido = self.pila.obtener_contenido()
+        if not contenido:
             self.text_historial.insert(tk.END, "No hay versiones registradas.")
         else:
-            # Simulamos recorrer la pila (tu implementación original no tiene MostrarContenido)
-            temp_pila = Pila()
-            contenido = []
-            
-            # Extraemos todos los elementos
-            while not self.pila.Vacia():
-                nodo = self.pila.Remover()
-                contenido.append(nodo.info)
-                temp_pila.Insertar(nodo.info)
-            
-            # Restauramos la pila original
-            while not temp_pila.Vacia():
-                nodo = temp_pila.Remover()
-                self.pila.Insertar(nodo)
-            
-            # Mostramos en orden correcto (del más reciente al más antiguo)
-            for version in reversed(contenido):
+            for version in contenido:
                 self.text_historial.insert(tk.END, 
                     f"Versión {version['id']}\n"
                     f"Autor: {version['autor']}\n"
@@ -182,53 +167,33 @@ class VersionControlApp:
 
     def dibujar_pila(self):
         self.canvas_pila.delete("all")
-        
-        if self.pila.Vacia():
+        contenido = self.pila.obtener_contenido()
+        if not contenido:
             self.canvas_pila.create_text(150, 90, text="Pila vacía", font=('Arial', 12))
             return
-        
-        # Simulamos recorrer la pila para dibujarla
-        temp_pila = Pila()
-        elementos = []
-        
-        # Extraemos todos los elementos
-        while not self.pila.Vacia():
-            nodo = self.pila.Remover()
-            elementos.append(nodo.info)
-            temp_pila.Insertar(nodo.info)
-        
-        # Restauramos la pila original
-        while not temp_pila.Vacia():
-            nodo = temp_pila.Remover()
-            self.pila.Insertar(nodo)
-        
-        # Dibujamos la pila
+
         width = self.canvas_pila.winfo_width()
         x = width // 2
         y = 20
         rect_width = 200
         rect_height = 30
-        
-        for i, version in enumerate(reversed(elementos)):
+
+        for i, version in enumerate(contenido):
             color = "#d9e6f2" if i % 2 == 0 else "#c4d9f2"
-            
             self.canvas_pila.create_rectangle(
                 x - rect_width//2, y,
                 x + rect_width//2, y + rect_height,
                 fill=color, outline="#4a90d9"
             )
-            
             self.canvas_pila.create_text(
                 x, y + rect_height//2,
-                text=f"Versión {version['id']}",
+                text=f"Versión {version['id']}: {version['autor']}",
                 font=('Arial', 8)
             )
-            
             if i == 0:
                 self.canvas_pila.create_text(
                     x + rect_width//2 - 10, y + 5,
                     text="TOP", font=('Arial', 7, 'bold'),
                     fill="red"
                 )
-            
             y += rect_height + 5
