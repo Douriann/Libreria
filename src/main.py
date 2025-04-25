@@ -2,7 +2,16 @@
 from Pila import Pila, NodoPila
 from Colas import Cola, Nodo
 from Lista import Lista, Nodo
+import tkinter as tk
+from vistaPilas import VersionControlApp
 
+def main():
+    root = tk.Tk()
+    app = VersionControlApp(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
 def menu():
     print("\nSeleccione la estructura de datos con la que desea trabajar:")
     print("1. Pila")

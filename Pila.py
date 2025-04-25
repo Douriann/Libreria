@@ -1,3 +1,5 @@
+
+
 class NodoPila:
     def __init__(self, valor=None):
         self.info = valor  # Valor del nodo
@@ -7,6 +9,7 @@ class NodoPila:
 class Pila:
     def __init__(self):
         self.Tope = None 
+        self.contador= 0 
 
     def Vacia(self):
         #Verifica si la pila esta vacia
@@ -64,12 +67,3 @@ class Pila:
     def AsigInfo(self, nodo, valor):
         #Asigna un nuevo valor al nodo
         nodo.info = valor
-
-    def obtener_contenido(self):
-        """Devuelve una lista de los datos de los nodos de la pila, desde el tope hasta el fondo."""
-        contenido = []
-        actual = self.Tope  # Usa el nombre correcto del atributo
-        while actual:
-            contenido.append(actual.info)
-            actual = actual.ap  # Usa el nombre correcto del enlace entre nodos
-        return contenido
