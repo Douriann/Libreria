@@ -1,17 +1,20 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from PIL import Image, ImageTk
-from graphviz import Digraph
-import os
-from Lista import Lista 
+from Estudiante import Estudiante
+from src.Lista import Lista 
 
 class VistaListaApp:
     def __init__(self, root):
+        self.nodo_seleccionado = None
+        
         self.root = root
         self.root.title("Gestión de Estudiantes")
 
         self.lista_ingresados = Lista()
         self.lista_no_ingresados = Lista()
+        
+        self.titulo = tk.Label(self.root, text="Gestión de Estudiantes", font=("Arial", 20))
+        self.titulo.pack(side="top", pady=10)
 
         self.frame_busquedas = tk.Frame(root)
         self.frame_busquedas.pack(padx=10, pady=5)
@@ -19,17 +22,20 @@ class VistaListaApp:
         # Busqueda de los ingresados
         tk.Label(self.frame_busquedas, text="Buscar Ingresados:").grid(row=0, column=0)
         self.entry_buscar_ingresados = tk.Entry(self.frame_busquedas)
-        self.entry_buscar_ingresados.grid(row=0, column=1, padx=5)
+        self.entry_buscar_ingresados.grid(row=0, column=1, padx=(5,50))
         self.entry_buscar_ingresados.bind("<KeyRelease>", self.filtrar_ingresados)
 
         # Busqueda no ingresados
-        tk.Label(self.frame_busquedas, text="Buscar No Ingresados:").grid(row=0, column=2)
+        tk.Label(self.frame_busquedas, text="Buscar No Ingresados:").grid(row=0, column=4, padx=(80, 0))
         self.entry_buscar_no_ingresados = tk.Entry(self.frame_busquedas)
-        self.entry_buscar_no_ingresados.grid(row=0, column=3, padx=5)
+        self.entry_buscar_no_ingresados.grid(row=0, column=5, padx=(20,5))
         self.entry_buscar_no_ingresados.bind("<KeyRelease>", self.filtrar_no_ingresados)
 
         self.frame_tablas = tk.Frame(root)
-        self.frame_tablas.pack(padx=10)
+        self.frame_tablas.pack(fill="x", expand=True, padx=10)
+        
+        self.frame_tablas.grid_columnconfigure(0, weight=1)
+        self.frame_tablas.grid_columnconfigure(1, weight=1)
 
         self.tree_ingresados = self.crear_tabla("Estudiantes Ingresados", 0)
         self.tree_no_ingresados = self.crear_tabla("Estudiantes No Ingresados", 1)
@@ -68,20 +74,23 @@ class VistaListaApp:
         tk.Button(self.frame_btns, text="Mover Todos a Ingresados", command=self.mover_todos_no_ingresados).grid(row=1, column=1, pady=5)
         tk.Button(self.frame_btns, text="Mover Todos a No Ingresados", command=self.mover_todos_ingresados).grid(row=1, column=3, pady=5)
 
-        self.label_img_grafo = tk.Label(root)
-        self.label_img_grafo.pack(pady=10)
+        # self.label_img_grafo = tk.Label(root)
+        # self.label_img_grafo.pack(pady=10)
+        # Canvas para dibujar
+        self.canvas = tk.Canvas(self.root, bg="white")
+        self.canvas.pack(fill=tk.BOTH, padx=20, pady=20, expand=True)
 
         self.actualizar_tablas()
 
     def crear_tabla(self, titulo, col):
         frame = tk.Frame(self.frame_tablas)
-        frame.grid(row=0, column=col, padx=10)
+        frame.grid(row=0, column=col, padx=10, sticky="nsew")
         tk.Label(frame, text=titulo).pack()
         tree = ttk.Treeview(frame, columns=("Cedula", "Nombre", "Carrera", "Materias", "UC"), show="headings", height=7)
         for col in tree["columns"]:
             tree.heading(col, text=col)
             tree.column(col, width=100)
-        tree.pack()
+        tree.pack(fill="x", padx=30)
         return tree
 
     def agregar_estudiante(self):
@@ -91,6 +100,8 @@ class VistaListaApp:
             return
 
         cedula, nombre, carrera, materias, uc_aprobadas = datos
+        
+        estudiante = Estudiante(cedula, nombre, carrera, materias, uc_aprobadas)
 
         # Validaciones campos de entrada
         if not cedula.isdigit():
@@ -110,10 +121,10 @@ class VistaListaApp:
                 messagebox.showerror("Duplicado", "La cédula ya está registrada.")
                 return
 
-        destino.InsComienzo("|".join(datos))
+        destino.InsComienzo(estudiante)
         self.actualizar_tablas()
         self.limpiar_campos()
-
+    
     def eliminar_estudiante(self, lista):
         cedula = self.entries["cédula"].get().strip()
         if not cedula:
@@ -123,7 +134,7 @@ class VistaListaApp:
         p = lista.Primero
         ant = None
         while p:
-            if p.info.split("|")[0] == cedula:
+            if p.info.identificacion == cedula:
                 if ant:
                     lista.EliDespues(ant)
                 else:
@@ -169,8 +180,8 @@ class VistaListaApp:
             tree.delete(item)
         p = lista.Primero
         while p:
-            if texto in p.info.lower():
-                tree.insert("", tk.END, values=p.info.split("|"))
+            if texto in p.info.identificacion.lower():
+                tree.insert("", tk.END, values=p.info.getInfo())
             p = p.prox
 
     def actualizar_tablas(self):
@@ -179,32 +190,48 @@ class VistaListaApp:
         self.actualizar_grafo()
         self.contador_ingresados.config(text=f"Total de Ingresados: {self.lista_ingresados.Contar()}")
         self.contador_no_ingresados.config(text=f"Total de No Ingresados: {self.lista_no_ingresados.Contar()}")
-
+        
     def actualizar_grafo(self):
-        dot = Digraph(format='png')
-        dot.attr(rankdir='LR', size='10')
-        p = self.lista_ingresados.Primero
-        idx = 0
-        last = None
-        while p:
-            datos = p.info.split("|")
-            cedula = datos[0]
-            nombre = datos[1]
-            label = f"{cedula}\\n{nombre}"
-            node = f"node{idx}"
-            dot.node(node, label)
-            if last:
-                dot.edge(last, node)
-            last = node
-            idx += 1
-            p = p.prox
+        self.canvas.delete("all")
+        print("dibujar lista estudiante")
+        if self.lista_ingresados.Vacia():
+            self.canvas.create_text((self.canvas.winfo_reqwidth() / 2), (self.canvas.winfo_reqheight() / 2), text="[Lista vacía]", font=("Arial", 14))
+            return
 
-        path = os.path.join(os.path.dirname(__file__), "grafo_lista")
-        dot.render(path, cleanup=True)
-        img = Image.open(path + ".png")
-        img = img.resize((800, 300), Image.Resampling.LANCZOS)
-        self.img_grafo = ImageTk.PhotoImage(img)
-        self.label_img_grafo.config(image=self.img_grafo)
+        x = 100  # Posición inicial X
+        y = 150  # Posición fija Y
+        separacion = 170  # Espacio entre nodos
+
+        p = self.lista_ingresados.Primero
+        while p is not None:
+            # Dibujar nodo (círculo + texto)
+            color = "red" if p == self.lista_ingresados.Primero else ("lightgreen" if p == self.nodo_seleccionado else "lightblue")
+            # canvas.create_oval(x-30, y-30, x+30, y+30, fill=color, tags=f"nodo_{p.info.identificacion}")
+            self.canvas.create_rectangle(x-50, y-30, x+50, y+30, fill=color, tags=f"nodo_{p.info.identificacion}")
+            small_rect_width = 20
+            self.canvas.create_rectangle(x+50, y-30, x+50+small_rect_width, y+30, fill=color, tags=f"nodo_{p.info.identificacion}")
+            if p.prox is None:
+                self.canvas.create_line(x+50, y+30, x+50+small_rect_width, y-30, tags=f"nodo_{p.info.identificacion}")
+            self.canvas.create_text(x, y, text=str(p.info.identificacion), font=("Arial", 12))
+
+            # Dibujar flecha si hay próximo nodo
+            if p.prox is not None:
+                self.canvas.create_line(x+70, y, x+separacion-30, y, arrow=tk.LAST)
+
+            # Etiquetar cabeza
+            if p == self.lista_ingresados.Primero:
+                self.canvas.create_text(x, y-50, text="Primero", fill="red", font=("Arial", 10, "bold"))
+
+            # Asignar evento de clic para selección
+            self.canvas.tag_bind(f"nodo_{p.info}", "<Button-1>", lambda e, nodo=p: self.seleccionar_nodo(nodo))
+
+            x += separacion
+            p = p.prox
+            
+    # Selección de nodo
+    def seleccionar_nodo(self,nodo):
+        self.nodo_seleccionado = nodo
+        self.actualizar_grafo()
 
 if __name__ == "__main__":
     root = tk.Tk()
