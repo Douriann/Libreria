@@ -17,23 +17,26 @@ def dibujar_cola():
     canvas.delete("all")  # Limpiar el canvas antes de redibujar
 
     if cola.Vacia():
-        canvas.create_text(375, 150, text="[La cola está vacía]", font=("Arial", 14))
+        canvas.create_text(375, 80, text="[La cola está vacía]", font=("Arial", 14))
+        canvas.create_rectangle(320, 130, 430, 190, fill="lightblue")
+        canvas.create_line(410, 130, 410, 190, fill="black")
         anuncio.config(text="No hay estudiantes en la cola", fg="black")
         return
 
     x = 100  # Posición inicial en X
     y = 150  # Posición fija en Y
-    separacion = 100  # Espacio entre nodos
+    separacion = 130  # Espacio entre nodos
 
     p = cola.Frente
     while p is not None:
         # Dibujar nodo (círculo + texto)
-        canvas.create_oval(x, y-30, x+80, y+30, fill="lightblue")
-        canvas.create_text(x+40, y, text=str(p.info.cedula), font=("Arial", 12))
+        canvas.create_rectangle(x, y-30, x+110, y+30, fill="lightblue")
+        canvas.create_text(x+45, y, text=str(p.info.cedula), font=("Arial", 12))
+        canvas.create_line(x+90, y-30, x+90, y+30, fill="black")  # Línea vertical
 
         # Dibujar flecha si hay un nodo siguiente
         if p.prox is not None:
-            canvas.create_line(x+80, y, x+separacion, y, arrow=tk.LAST)
+            canvas.create_line(x+110, y, x+separacion, y, arrow=tk.LAST)
 
         # Resaltar Frente (rojo) y Final (verde)
         if p == cola.Frente:
@@ -41,6 +44,7 @@ def dibujar_cola():
             mostrar_estudiante_atendido(p.info)
         if p == cola.Final:
             canvas.create_text(x+40, y+50, text="Final", fill="green", font=("Arial", 10, "bold"))
+            canvas.create_line(x+110, y-30, x+90, y+30, fill="black")
 
         x += separacion
         p = p.prox

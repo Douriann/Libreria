@@ -3,7 +3,7 @@ from Pila import Pila, NodoPila
 from Colas import Cola, Nodo
 from Lista import Lista, Nodo
 import tkinter as tk
-from vistaPilas import VersionControlApp
+from vista_pilas import VersionControlApp
 
 def main():
     root = tk.Tk()

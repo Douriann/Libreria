@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from Estudiante import Estudiante
-from src.Lista import Lista 
+from Lista import Lista 
 
 class VistaListaApp:
     def __init__(self, root):
