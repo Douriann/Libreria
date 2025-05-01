@@ -4,7 +4,7 @@ from vista_pilas import VersionControlApp
 
 # Funciones para los botones
 def abrir_listas():
-    subprocess.run(["python", "vista_lista.py"])
+    subprocess.run(["python", "src/vista_lista.py"])
 
 def abrir_pilas():
     ventana_pilas = tk.Tk()
@@ -12,7 +12,7 @@ def abrir_pilas():
     ventana_pilas.mainloop()
 
 def abrir_colas():
-    subprocess.run(["python", "vista_colas.py"])
+    subprocess.run(["python", "src/vista_colas.py"])
 
 # Crear ventana principal
 ventana = tk.Tk()
@@ -25,7 +25,7 @@ btn_pilas = tk.Button(ventana, text="Pilas", command=abrir_pilas)
 btn_colas = tk.Button(ventana, text="Colas", command=abrir_colas)
 
 # Ubicar botones en la ventana
-btn_listas.pack(pady=10)  # Espacio entre botones
+btn_listas.pack(pady=10)
 btn_pilas.pack(pady=10)
 btn_colas.pack(pady=10)
 
