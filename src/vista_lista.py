@@ -3,6 +3,27 @@ from tkinter import ttk, messagebox
 from Estudiante import Estudiante
 from Lista import Lista 
 
+# Diccionario de materias y sus créditos
+MATERIAS_CREDITOS = {
+    "Calculo I": 4,
+    "Calculo II": 4,
+    "Calculo III": 4,
+    "Calculo IV": 4,
+    "Programacion I": 3,
+    "Programacion II": 3,
+    "Programacion III": 3,
+    "Estadistica I": 4,
+    "Estadistica II": 4,
+    "Estadistica Matematica": 4,
+    "Teoria de la Administracion I": 4,
+    "Tecnicas de la Administracion II": 4,
+    "Laboratorio I": 2,
+    "Laboratorio II": 2,
+    "Programacion Numerica": 2,
+    "Programacion No Numerica I": 3,
+    "Programacion No Numerica II": 4,
+}
+
 class VistaListaApp:
     def __init__(self, root):
         self.nodo_seleccionado = None
@@ -74,9 +95,6 @@ class VistaListaApp:
         tk.Button(self.frame_btns, text="Mover Todos a Ingresados", command=self.mover_todos_no_ingresados).grid(row=1, column=1, pady=5)
         tk.Button(self.frame_btns, text="Mover Todos a No Ingresados", command=self.mover_todos_ingresados).grid(row=1, column=3, pady=5)
 
-        # self.label_img_grafo = tk.Label(root)
-        # self.label_img_grafo.pack(pady=10)
-        # Canvas para dibujar
         self.canvas = tk.Canvas(self.root, bg="white")
         self.canvas.pack(fill=tk.BOTH, padx=20, pady=20, expand=True)
 
@@ -114,6 +132,32 @@ class VistaListaApp:
             messagebox.showerror("Error de Validación", "El nombre solo debe contener letras.")
             return
 
+        materias = materias.split(",")
+        materias = [materia.strip() for materia in materias]
+        creditos_totales = 0
+        materias_validadas = []
+        for materia in materias:
+            if materia not in MATERIAS_CREDITOS:
+                messagebox.showerror("Error de Materia", f"La materia {materia} no existe en el diccionario.")
+                return
+
+            # Validación de materias mutuamente excluyentes
+            if any(materia.startswith(m) for m in ["Calculo", "Programacion", "Estadistica", "Laboratorio"]):
+                if any(m in materias_validadas for m in ["Calculo", "Programacion", "Estadistica", "Laboratorio"]):
+                    messagebox.showerror("Error de Materia", "No se pueden inscribir materias de la misma categoría.")
+                    return
+
+            # Verificar que los créditos no superen el límite
+            creditos_totales += MATERIAS_CREDITOS[materia]
+            if creditos_totales > 16:
+                messagebox.showerror("Error de Créditos", "El total de créditos no puede superar 16.")
+                return
+
+            # Añadir materia validada
+            materias_validadas.append(materia)
+
+        estudiante.materias = materias_validadas
+
         destino = self.lista_ingresados if self.lista_destino.get() == "Ingresados" else self.lista_no_ingresados
 
         for lista in [self.lista_ingresados, self.lista_no_ingresados]:
@@ -121,7 +165,16 @@ class VistaListaApp:
                 messagebox.showerror("Duplicado", "La cédula ya está registrada.")
                 return
 
-        destino.InsComienzo(estudiante)
+        # Insertar al final de la lista usando InsDespues
+        if destino.Vacia():
+            destino.InsComienzo(estudiante)  # Si la lista está vacía, inserta al comienzo
+        else:
+            # Encontramos el último nodo
+            ultimo_nodo = destino.Primero
+            while ultimo_nodo.prox is not None:
+                ultimo_nodo = ultimo_nodo.prox
+            destino.InsDespues(ultimo_nodo, estudiante)
+
         self.actualizar_tablas()
         self.limpiar_campos()
     
@@ -146,6 +199,37 @@ class VistaListaApp:
             p = p.prox
         messagebox.showinfo("No encontrado", "Cédula no encontrada.")
 
+    def limpiar_campos(self):
+        for entry in self.entries.values():
+            entry.delete(0, tk.END)
+        self.lista_destino.set("Ingresados")
+
+    def actualizar_tablas(self):
+        for tree, lista in [(self.tree_ingresados, self.lista_ingresados), (self.tree_no_ingresados, self.lista_no_ingresados)]:
+            for item in tree.get_children():
+                tree.delete(item)
+
+            for estudiante in lista.obtener_todos():
+                tree.insert("", "end", values=(estudiante.cedula, estudiante.nombre, estudiante.carrera, ", ".join(estudiante.materias), estudiante.uc_aprobadas))
+
+        self.contador_ingresados.config(text=f"Total Ingresados: {self.lista_ingresados.obtener_tamano()}")
+        self.contador_no_ingresados.config(text=f"Total No Ingresados: {self.lista_no_ingresados.obtener_tamano()}")
+
+    def filtrar_ingresados(self, event):
+        self.filtrar(self.entry_buscar_ingresados, self.tree_ingresados)
+
+    def filtrar_no_ingresados(self, event):
+        self.filtrar(self.entry_buscar_no_ingresados, self.tree_no_ingresados)
+
+    def filtrar(self, entry, tree):
+        filtro = entry.get().lower()
+        for item in tree.get_children():
+            tree.delete(item)
+
+        for estudiante in self.lista_ingresados.obtener_todos():
+            if filtro in estudiante.nombre.lower():
+                tree.insert("", "end", values=(estudiante.cedula, estudiante.nombre, estudiante.carrera, ", ".join(estudiante.materias), estudiante.uc_aprobadas))
+
     def mover_todos_no_ingresados(self):
         self.lista_ingresados.pasarListaAux(self.lista_no_ingresados, self.lista_ingresados)
         self.actualizar_tablas()
@@ -155,13 +239,13 @@ class VistaListaApp:
         self.actualizar_tablas()
 
     def autocompletar_desde_tabla(self, tree):
-        item = tree.selection()
-        if item:
-            datos = tree.item(item[0])["values"]
-            claves = list(self.entries.keys())
-            for i in range(len(claves)):
-                self.entries[claves[i]].delete(0, tk.END)
-                self.entries[claves[i]].insert(0, datos[i])
+        selected = tree.selection()
+        if selected:
+            item = tree.item(selected[0])
+            for key, value in zip(self.entries.keys(), item["values"]):
+                self.entries[key].delete(0, tk.END)
+                self.entries[key].insert(0, value)
+
 
     def limpiar_campos(self):
         for entry in self.entries.values():
