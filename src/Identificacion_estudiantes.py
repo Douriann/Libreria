@@ -114,12 +114,15 @@ class VistaIdentificacion_estudiantes:
         p = self.lista.Primero
         
         while p:
+            informacion  = p.info.getInfo()
+            
+            informacion[3] = len(p.info.materias)
             if p.info.creditos_totales > 16 and len(p.info.materias) >= 7:
-                self.tree_excesivos.insert("", tk.END, values=p.info.getInfo())
+                self.tree_excesivos.insert("", tk.END, values=informacion)
             elif p.info.creditos_totales < 8 and len(p.info.materias) <= 3:
-                self.tree_bajos.insert("", tk.END, values=p.info.getInfo())
+                self.tree_bajos.insert("", tk.END, values=informacion)
             else: 
-                self.tree_medios.insert("", tk.END, values=p.info.getInfo())
+                self.tree_medios.insert("", tk.END, values=informacion)
             p = p.prox
             
 
