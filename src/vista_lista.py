@@ -208,25 +208,44 @@ class VistaListaApp:
 
     
     def eliminar_estudiante(self, lista):
-        cedula = self.entries["cédula"].get().strip()
-        if not cedula:
-            messagebox.showwarning("Cédula Vacía", "Ingrese la cédula a eliminar.")
-            return
+     cedula = self.entries["cédula"].get().strip()
 
+     if lista.Vacia():
+        messagebox.showinfo("Lista Vacía", "No hay estudiantes para eliminar.")
+        return
+
+     if not cedula:
+        # Eliminar el último estudiante
         p = lista.Primero
         ant = None
-        while p:
-            if p.info.identificacion == cedula:
-                if ant:
-                    lista.EliDespues(ant)
-                else:
-                    lista.EliComienzo()
-                self.actualizar_tablas()
-                self.limpiar_campos()
-                return
-            ant = p
-            p = p.prox
-        messagebox.showinfo("No encontrado", "Cédula no encontrada.")
+        if p.prox is None:
+            lista.EliComienzo()
+        else:
+            while p.prox:
+                ant = p
+                p = p.prox
+            lista.EliDespues(ant)
+        self.actualizar_tablas()
+        self.limpiar_campos()
+        return
+
+    # Buscar y eliminar por cédula
+     p = lista.Primero
+     ant = None
+     while p:
+        if p.info.identificacion == cedula:
+            if ant:
+                lista.EliDespues(ant)
+            else:
+                lista.EliComienzo()
+            self.actualizar_tablas()
+            self.limpiar_campos()
+            return
+        ant = p
+        p = p.prox
+
+     messagebox.showinfo("No encontrado", "Cédula no encontrada.")
+
 
     def limpiar_campos(self):
         for entry in self.entries.values():
