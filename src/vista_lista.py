@@ -1,9 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from Estudiante import Estudiante
-from Lista import Lista
-from collections import defaultdict
-
+from Lista import Lista 
 
 # Diccionario de materias y sus créditos
 MATERIAS_CREDITOS = {
@@ -36,32 +34,34 @@ grupos_excluyentes = [
 class VistaListaApp:
     def __init__(self, root):
         self.nodo_seleccionado = None
-
+        
         self.root = root
         self.root.title("Gestión de Estudiantes")
 
         self.lista_ingresados = Lista()
         self.lista_no_ingresados = Lista()
-
+        
         self.titulo = tk.Label(self.root, text="Gestión de Estudiantes", font=("Arial", 20))
         self.titulo.pack(side="top", pady=10)
 
         self.frame_busquedas = tk.Frame(root)
         self.frame_busquedas.pack(padx=10, pady=5)
+
         # Busqueda de los ingresados
         tk.Label(self.frame_busquedas, text="Buscar Ingresados:").grid(row=0, column=0)
         self.entry_buscar_ingresados = tk.Entry(self.frame_busquedas)
-        self.entry_buscar_ingresados.grid(row=0, column=1, padx=(5, 50))
+        self.entry_buscar_ingresados.grid(row=0, column=1, padx=(5,50))
         self.entry_buscar_ingresados.bind("<KeyRelease>", self.filtrar_ingresados)
+
         # Busqueda no ingresados
         tk.Label(self.frame_busquedas, text="Buscar No Ingresados:").grid(row=0, column=4, padx=(80, 0))
         self.entry_buscar_no_ingresados = tk.Entry(self.frame_busquedas)
-        self.entry_buscar_no_ingresados.grid(row=0, column=5, padx=(20, 5))
+        self.entry_buscar_no_ingresados.grid(row=0, column=5, padx=(20,5))
         self.entry_buscar_no_ingresados.bind("<KeyRelease>", self.filtrar_no_ingresados)
 
         self.frame_tablas = tk.Frame(root)
         self.frame_tablas.pack(fill="x", expand=True, padx=10)
-
+        
         self.frame_tablas.grid_columnconfigure(0, weight=1)
         self.frame_tablas.grid_columnconfigure(1, weight=1)
 
@@ -69,14 +69,13 @@ class VistaListaApp:
         self.tree_no_ingresados = self.crear_tabla("Estudiantes No Ingresados", 1)
 
         self.contador_ingresados = tk.Label(self.frame_tablas, text="Total Ingresados: 0")
-        self.contador_ingresados.grid(row=1, column=0, pady=(0, 10))
+        self.contador_ingresados.grid(row=1, column=0, pady=(0,10))
 
         self.contador_no_ingresados = tk.Label(self.frame_tablas, text="Total No Ingresados: 0")
-        self.contador_no_ingresados.grid(row=1, column=1, pady=(0, 10))
+        self.contador_no_ingresados.grid(row=1, column=1, pady=(0,10))
 
         self.tree_ingresados.bind("<<TreeviewSelect>>", lambda e: self.autocompletar_desde_tabla(self.tree_ingresados))
-        self.tree_no_ingresados.bind("<<TreeviewSelect>>",
-                                     lambda e: self.autocompletar_desde_tabla(self.tree_no_ingresados))
+        self.tree_no_ingresados.bind("<<TreeviewSelect>>", lambda e: self.autocompletar_desde_tabla(self.tree_no_ingresados))
 
         self.frame_form = tk.Frame(root)
         self.frame_form.pack(padx=10, pady=5)
@@ -89,42 +88,20 @@ class VistaListaApp:
             self.entries[campo.lower()] = entry
 
         self.lista_destino = tk.StringVar(value="Ingresados")
-        tk.Radiobutton(self.frame_form, text="Ingresados", variable=self.lista_destino, value="Ingresados").grid(row=0,
-                                                                                                                 column=2)
-        tk.Radiobutton(self.frame_form, text="No Ingresados", variable=self.lista_destino, value="No Ingresados").grid(
-            row=1, column=2)
+        tk.Radiobutton(self.frame_form, text="Ingresados", variable=self.lista_destino, value="Ingresados").grid(row=0, column=2)
+        tk.Radiobutton(self.frame_form, text="No Ingresados", variable=self.lista_destino, value="No Ingresados").grid(row=1, column=2)
 
         self.frame_btns = tk.Frame(root)
         self.frame_btns.pack(pady=5)
 
-        btn_style = {'padx': 5, 'pady': 2, 'width': 20}
+        tk.Button(self.frame_btns, text="Agregar Estudiante", command=self.agregar_estudiante).grid(row=0, column=0, padx=5)
+        tk.Button(self.frame_btns, text="Eliminar de Ingresados", command=lambda: self.eliminar_estudiante(self.lista_ingresados)).grid(row=0, column=1, padx=5)
+        tk.Button(self.frame_btns, text="Eliminar de No Ingresados", command=lambda: self.eliminar_estudiante(self.lista_no_ingresados)).grid(row=0, column=2, padx=5)
+        tk.Button(self.frame_btns, text="Limpiar Campos", command=self.limpiar_campos).grid(row=0, column=3, padx=5)
 
-        tk.Button(self.frame_btns, text="Agregar Estudiante", command=self.agregar_estudiante, **btn_style).grid(row=0,
-                                                                                                                 column=0)
-        tk.Button(self.frame_btns, text="Eliminar de Ingresados",
-                  command=lambda: self.eliminar_estudiante(self.lista_ingresados), **btn_style).grid(row=0, column=1)
-        tk.Button(self.frame_btns, text="Eliminar de No Ingresados",
-                  command=lambda: self.eliminar_estudiante(self.lista_no_ingresados), **btn_style).grid(row=0, column=2)
-        tk.Button(self.frame_btns, text="Limpiar Campos", command=self.limpiar_campos, **btn_style).grid(row=0,
-                                                                                                         column=3)
+        tk.Button(self.frame_btns, text="Mover Todos a Ingresados", command=self.mover_todos_no_ingresados).grid(row=1, column=1, pady=5)
+        tk.Button(self.frame_btns, text="Mover Todos a No Ingresados", command=self.mover_todos_ingresados).grid(row=1, column=3, pady=5)
 
-<<<<<<< HEAD
-=======
-        tk.Button(self.frame_btns, text="Mover Todos a Ingresados", command=self.mover_todos_no_ingresados,
-                  **btn_style).grid(row=1, column=0, columnspan=2)
-        tk.Button(self.frame_btns, text="Mover Todos a No Ingresados", command=self.mover_todos_ingresados,
-                  **btn_style).grid(row=1, column=2, columnspan=2)
-
-        tk.Button(
-            self.frame_btns,
-            text="Reportes Estadísticos",
-            command=self.mostrar_reportes,
-            **btn_style
-        ).grid(row=2, column=0, columnspan=4, pady=5)
-        # self.label_img_grafo = tk.Label(root)
-        # self.label_img_grafo.pack(pady=10)
-        # Canvas para dibujar
->>>>>>> 5d76d507005c19682c56612cdba94d290104bd8f
         self.canvas = tk.Canvas(self.root, bg="white")
         self.canvas.pack(fill=tk.BOTH, padx=20, pady=20, expand=True)
 
@@ -159,7 +136,6 @@ class VistaListaApp:
             messagebox.showerror("Duplicado", "La cédula ya está registrada.")
             return
 
-<<<<<<< HEAD
      if not uc_aprobadas.isdigit():
         messagebox.showerror("Error de Validación", "Las UC Aprobadas deben ser un número.")
         return
@@ -190,20 +166,6 @@ class VistaListaApp:
      for materia in materias:
         if materia not in MATERIAS_CREDITOS:
             messagebox.showerror("Error de Materia", f"La materia {materia} no existe en el sistema.")
-=======
-        cedula, nombre, carrera, materias, uc_aprobadas = datos
-
-        estudiante = Estudiante(cedula, nombre, carrera, materias, uc_aprobadas)
-        # Validaciones campos de entrada
-        if not cedula.isdigit():
-            messagebox.showerror("Error de Validación", "La cédula debe contener solo números.")
-            return
-        if not uc_aprobadas.isdigit():
-            messagebox.showerror("Error de Validación", "Las UC Aprobadas deben ser un número.")
-            return
-        if not nombre.replace(" ", "").isalpha():
-            messagebox.showerror("Error de Validación", "El nombre solo debe contener letras.")
->>>>>>> 5d76d507005c19682c56612cdba94d290104bd8f
             return
 
         # Validar exclusividad por grupo
@@ -232,7 +194,6 @@ class VistaListaApp:
      # Insertar al final de la lista usando InsDespues
      if destino.Vacia():
         destino.InsComienzo(estudiante)
-<<<<<<< HEAD
      else:
         ultimo_nodo = destino.Primero
         while ultimo_nodo.prox is not None:
@@ -246,11 +207,6 @@ class VistaListaApp:
 
 
     
-=======
-        self.actualizar_tablas()
-        self.limpiar_campos()
-
->>>>>>> 5d76d507005c19682c56612cdba94d290104bd8f
     def eliminar_estudiante(self, lista):
         cedula = self.entries["cédula"].get().strip()
         if not cedula:
@@ -347,211 +303,48 @@ class VistaListaApp:
         self.actualizar_grafo()
         self.contador_ingresados.config(text=f"Total de Ingresados: {self.lista_ingresados.Contar()}")
         self.contador_no_ingresados.config(text=f"Total de No Ingresados: {self.lista_no_ingresados.Contar()}")
-
+        
     def actualizar_grafo(self):
         self.canvas.delete("all")
+        print("dibujar lista estudiante")
         if self.lista_ingresados.Vacia():
-            self.canvas.create_text((self.canvas.winfo_reqwidth() / 2), (self.canvas.winfo_reqheight() / 2),
-                                    text="[Lista vacía]", font=("Arial", 14))
+            self.canvas.create_text((self.canvas.winfo_reqwidth() / 2), (self.canvas.winfo_reqheight() / 2), text="[Lista vacía]", font=("Arial", 14))
             return
 
-        x = 100 # Posición inicial X
-        y = 150 # Posición fija Y
-        separacion = 170 # Espacio entre nodos
+        x = 100  # Posición inicial X
+        y = 150  # Posición fija Y
+        separacion = 170  # Espacio entre nodos
 
         p = self.lista_ingresados.Primero
         while p is not None:
-             # Dibujar nodo (círculo + texto)
-            color = "red" if p == self.lista_ingresados.Primero else (
-                "lightgreen" if p == self.nodo_seleccionado else "lightblue")
-            self.canvas.create_rectangle(x - 50, y - 30, x + 50, y + 30, fill=color,
-                                         tags=f"nodo_{p.info.identificacion}")
+            # Dibujar nodo (círculo + texto)
+            color = "red" if p == self.lista_ingresados.Primero else ("lightgreen" if p == self.nodo_seleccionado else "lightblue")
+            # canvas.create_oval(x-30, y-30, x+30, y+30, fill=color, tags=f"nodo_{p.info.identificacion}")
+            self.canvas.create_rectangle(x-50, y-30, x+50, y+30, fill=color, tags=f"nodo_{p.info.identificacion}")
             small_rect_width = 20
-            self.canvas.create_rectangle(x + 50, y - 30, x + 50 + small_rect_width, y + 30, fill=color,
-                                         tags=f"nodo_{p.info.identificacion}")
-            # Dibujar flecha si hay próximo nodo
+            self.canvas.create_rectangle(x+50, y-30, x+50+small_rect_width, y+30, fill=color, tags=f"nodo_{p.info.identificacion}")
             if p.prox is None:
-                self.canvas.create_line(x + 50, y + 30, x + 50 + small_rect_width, y - 30,
-                                        tags=f"nodo_{p.info.identificacion}")
+                self.canvas.create_line(x+50, y+30, x+50+small_rect_width, y-30, tags=f"nodo_{p.info.identificacion}")
             self.canvas.create_text(x, y, text=str(p.info.identificacion), font=("Arial", 12))
 
+            # Dibujar flecha si hay próximo nodo
             if p.prox is not None:
-                self.canvas.create_line(x + 70, y, x + separacion - 30, y, arrow=tk.LAST)
+                self.canvas.create_line(x+70, y, x+separacion-30, y, arrow=tk.LAST)
+
             # Etiquetar cabeza
             if p == self.lista_ingresados.Primero:
-                self.canvas.create_text(x, y - 50, text="Primero", fill="red", font=("Arial", 10, "bold"))
+                self.canvas.create_text(x, y-50, text="Primero", fill="red", font=("Arial", 10, "bold"))
+
             # Asignar evento de clic para selección
             self.canvas.tag_bind(f"nodo_{p.info}", "<Button-1>", lambda e, nodo=p: self.seleccionar_nodo(nodo))
 
             x += separacion
             p = p.prox
+            
     # Selección de nodo
-    def seleccionar_nodo(self, nodo):
+    def seleccionar_nodo(self,nodo):
         self.nodo_seleccionado = nodo
         self.actualizar_grafo()
-
-    def mostrar_reportes(self):
-        reportes_window = tk.Toplevel(self.root)
-        reportes_window.title("Reportes Estadísticos")
-        reportes_window.geometry("900x600")
-
-        notebook = ttk.Notebook(reportes_window)
-        notebook.pack(fill=tk.BOTH, expand=True)
-
-        tab_resumen = ttk.Frame(notebook)
-        notebook.add(tab_resumen, text="Resumen General")
-        self._crear_tab_resumen(tab_resumen)
-
-        tab_carreras = ttk.Frame(notebook)
-        notebook.add(tab_carreras, text="Por Carrera")
-        self._crear_tab_carreras(tab_carreras)
-
-        tab_academica = ttk.Frame(notebook)
-        notebook.add(tab_academica, text="Datos Académicos")
-        self._crear_tab_academica(tab_academica)
-
-    def _crear_tab_resumen(self, parent):
-        frame = ttk.Frame(parent)
-        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-
-        total_ing = self.lista_ingresados.Contar()
-        total_no_ing = self.lista_no_ingresados.Contar()
-        total = total_ing + total_no_ing
-
-        ttk.Label(frame, text="RESUMEN ESTADÍSTICO", font=('Arial', 14, 'bold')).pack(pady=10)
-
-        metrics_frame = ttk.Frame(frame)
-        metrics_frame.pack(fill=tk.X, pady=10)
-
-        ttk.Label(metrics_frame, text=f"Total Estudiantes: {total}", font=('Arial', 12)).grid(row=0, column=0, padx=20)
-        ttk.Label(metrics_frame, text=f"Ingresados: {total_ing}", font=('Arial', 12)).grid(row=0, column=1, padx=20)
-        ttk.Label(metrics_frame, text=f"No Ingresados: {total_no_ing}", font=('Arial', 12)).grid(row=0, column=2,
-                                                                                                 padx=20)
-
-        if total > 0:
-            ttk.Label(metrics_frame, text=f"% Ingresados: {(total_ing / total) * 100:.1f}%", font=('Arial', 12)).grid(
-                row=1, column=1, pady=10)
-
-        if total > 0:
-            canvas = tk.Canvas(frame, width=400, height=300, bg='white')
-            canvas.pack(pady=20)
-
-            start_angle = 0
-            extent_ing = (total_ing / total) * 360
-            extent_no_ing = (total_no_ing / total) * 360
-
-            canvas.create_arc(50, 50, 350, 350, start=start_angle, extent=extent_ing, fill="#4CAF50", outline="white")
-            canvas.create_arc(50, 50, 350, 350, start=start_angle + extent_ing, extent=extent_no_ing, fill="#F44336",
-                              outline="white")
-
-            canvas.create_text(200, 400, text=f"Ingresados: {total_ing} ({extent_ing / 3.6:.1f}%)", fill="#4CAF50",
-                               font=('Arial', 10))
-            canvas.create_text(200, 420, text=f"No Ingresados: {total_no_ing} ({extent_no_ing / 3.6:.1f}%)",
-                               fill="#F44336", font=('Arial', 10))
-
-    def _crear_tab_carreras(self, parent):
-        frame = ttk.Frame(parent)
-        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-
-        carreras = defaultdict(int)
-
-        for lista in [self.lista_ingresados, self.lista_no_ingresados]:
-            p = lista.Primero
-            while p:
-                estudiante = p.info
-                carrera = ""
-
-                if hasattr(estudiante, 'carrera'):
-                    carrera = estudiante.carrera
-                elif hasattr(estudiante, 'getInfo'):
-                    datos = estudiante.getInfo()
-                    carrera = datos[2] if len(datos) > 2 else ""
-
-                carrera = carrera.strip() if carrera else "No registrada"
-                carreras[carrera] += 1
-                p = p.prox
-
-        if not carreras:
-            ttk.Label(frame, text="No hay datos de carreras disponibles", font=('Arial', 12)).pack(pady=50)
-            return
-
-        tree = ttk.Treeview(frame, columns=('Carrera', 'Total', '%'), show='headings')
-        tree.heading('Carrera', text='Carrera')
-        tree.heading('Total', text='Total')
-        tree.heading('%', text='%')
-
-        tree.column('Carrera', width=400)
-        tree.column('Total', width=150, anchor='center')
-        tree.column('%', width=150, anchor='center')
-
-        total_estudiantes = sum(carreras.values())
-
-        for carrera, total in sorted(carreras.items(), key=lambda x: x[1], reverse=True):
-            porcentaje = (total / total_estudiantes) * 100 if total_estudiantes > 0 else 0
-
-            tree.insert('', 'end', values=(
-                carrera,
-                total,
-                f"{porcentaje:.1f}%"
-            ))
-
-        tree.pack(fill=tk.BOTH, expand=True, pady=10)
-
-        if carreras:
-            canvas = tk.Canvas(frame, width=800, height=300, bg='white')
-            canvas.pack(pady=20)
-
-            max_cant = max(carreras.values())
-            x = 50
-            bar_width = 40
-            spacing = 20
-
-            for i, (carrera, total) in enumerate(sorted(carreras.items(), key=lambda x: x[1], reverse=True)[:10]):
-                height = (total / max_cant) * 250
-                color = "#{:06x}".format(i * 0x333333 % 0xFFFFFF)
-
-                canvas.create_rectangle(x, 280 - height, x + bar_width, 280, fill=color, outline='black')
-                canvas.create_text(x + bar_width / 2, 290, text=carrera[:15] + ("..." if len(carrera) > 15 else ""),
-                                   angle=45, anchor='ne')
-                canvas.create_text(x + bar_width / 2, 280 - height - 10, text=str(total))
-                x += bar_width + spacing
-
-    def _crear_tab_academica(self, parent):
-        frame = ttk.Frame(parent)
-        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-
-        uc_aprobadas = []
-        materias = defaultdict(int)
-
-        for lista in [self.lista_ingresados, self.lista_no_ingresados]:
-            p = lista.Primero
-            while p:
-                if hasattr(p.info, 'uc_aprobadas'):
-                    try:
-                        uc_aprobadas.append(int(p.info.uc_aprobadas))
-                    except:
-                        pass
-                if hasattr(p.info, 'materias'):
-                    materias[p.info.materias] += 1
-                p = p.prox
-
-        ttk.Label(frame, text="DATOS ACADÉMICOS", font=('Arial', 14, 'bold')).pack(pady=10)
-
-        if uc_aprobadas:
-            stats_frame = ttk.Frame(frame)
-            stats_frame.pack(fill=tk.X, pady=10)
-
-            ttk.Label(stats_frame, text=f"UC aprobadas (promedio): {sum(uc_aprobadas) / len(uc_aprobadas):.1f}",
-                      font=('Arial', 10)).pack(side=tk.LEFT, padx=20)
-            ttk.Label(stats_frame, text=f"Mínimo: {min(uc_aprobadas)}", font=('Arial', 10)).pack(side=tk.LEFT, padx=20)
-            ttk.Label(stats_frame, text=f"Máximo: {max(uc_aprobadas)}", font=('Arial', 10)).pack(side=tk.LEFT, padx=20)
-
-        if materias:
-            ttk.Label(frame, text="Materias más frecuentes:", font=('Arial', 12)).pack(pady=10, anchor='w')
-
-            for materia, cant in sorted(materias.items(), key=lambda x: x[1], reverse=True)[:5]:
-                ttk.Label(frame, text=f"- {materia}: {cant} estudiantes", font=('Arial', 10)).pack(anchor='w', padx=20)
-
 
 if __name__ == "__main__":
     root = tk.Tk()
