@@ -25,7 +25,7 @@ btn_pilas = tk.Button(ventana, text="Pilas", command=abrir_pilas)
 btn_colas = tk.Button(ventana, text="Colas", command=abrir_colas)
 
 # Ubicar botones en la ventana
-btn_listas.pack(pady=10)  # Espacio entre botones
+btn_listas.pack(pady=10)
 btn_pilas.pack(pady=10)
 btn_colas.pack(pady=10)
 
