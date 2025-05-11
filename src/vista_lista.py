@@ -23,7 +23,14 @@ MATERIAS_CREDITOS = {
     "Programacion No Numerica I": 3,
     "Programacion No Numerica II": 4,
 }
-
+grupos_excluyentes = [
+    ["Calculo I", "Calculo II", "Calculo III", "Calculo IV"],
+    ["Programacion I", "Programacion II", "Programacion III"],
+    ["Estadistica I", "Estadistica II", "Estadistica Matematica"],
+    ["Teoria de la Administracion I", "Tecnicas de la Administracion II"],
+    ["Laboratorio I", "Laboratorio II"],
+    ["Programacion No Numerica I", "Programacion No Numerica II"]
+]
 class VistaListaApp:
     def __init__(self, root):
         self.nodo_seleccionado = None
@@ -110,73 +117,95 @@ class VistaListaApp:
             tree.column(col, width=100)
         tree.pack(fill="x", padx=30)
         return tree
-
     def agregar_estudiante(self):
-        datos = [entry.get().strip() for entry in self.entries.values()]
-        if not all(datos):
-            messagebox.showwarning("Campos incompletos", "Todos los campos deben estar llenos.")
+     datos = [entry.get().strip() for entry in self.entries.values()]
+     if not all(datos):
+        messagebox.showwarning("Campos incompletos", "Todos los campos deben estar llenos.")
+        return
+
+     cedula, nombre, carrera, materias, uc_aprobadas = datos
+
+     # Validaciones campos de entrada
+     if not cedula.isdigit():
+        messagebox.showerror("Error de Validación", "La cédula debe contener solo números.")
+        return
+
+     # Validar que la cédula no esté repetida en ninguna lista
+     for lista in [self.lista_ingresados, self.lista_no_ingresados]:
+        if lista.Buscar(cedula):
+            messagebox.showerror("Duplicado", "La cédula ya está registrada.")
             return
 
-        cedula, nombre, carrera, materias, uc_aprobadas = datos
-        
-        estudiante = Estudiante(cedula, nombre, carrera, materias, uc_aprobadas)
+     if not uc_aprobadas.isdigit():
+        messagebox.showerror("Error de Validación", "Las UC Aprobadas deben ser un número.")
+        return
+     if not nombre.replace(" ", "").isalpha():
+        messagebox.showerror("Error de Validación", "El nombre solo debe contener letras.")
+        return
 
-        # Validaciones campos de entrada
-        if not cedula.isdigit():
-            messagebox.showerror("Error de Validación", "La cédula debe contener solo números.")
-            return
-        if not uc_aprobadas.isdigit():
-            messagebox.showerror("Error de Validación", "Las UC Aprobadas deben ser un número.")
-            return
-        if not nombre.replace(" ", "").isalpha():
-            messagebox.showerror("Error de Validación", "El nombre solo debe contener letras.")
+     materias = materias.split(",")
+     materias = [materia.strip() for materia in materias]
+
+     # Validación de materias duplicadas
+     if len(materias) != len(set(materias)):
+        messagebox.showerror("Error de Materia", "No se puede inscribir una misma materia más de una vez.")
+        return
+
+     creditos_totales = 0
+     materias_validadas = []
+
+     grupos_excluyentes = [
+        ["Calculo I", "Calculo II", "Calculo III", "Calculo IV"],
+        ["Programacion I", "Programacion II", "Programacion III"],
+        ["Estadistica I", "Estadistica II", "Estadistica Matematica"],
+        ["Teoria de la Administracion I", "Tecnicas de la Administracion II"],
+        ["Laboratorio I", "Laboratorio II"],
+        ["Programacion No Numerica I", "Programacion No Numerica II"]
+     ]
+
+     for materia in materias:
+        if materia not in MATERIAS_CREDITOS:
+            messagebox.showerror("Error de Materia", f"La materia {materia} no existe en el sistema.")
             return
 
-        materias = materias.split(",")
-        materias = [materia.strip() for materia in materias]
-        creditos_totales = 0
-        materias_validadas = []
-        for materia in materias:
-            if materia not in MATERIAS_CREDITOS:
-                messagebox.showerror("Error de Materia", f"La materia {materia} no existe en el diccionario.")
-                return
-
-            # Validación de materias mutuamente excluyentes
-            if any(materia.startswith(m) for m in ["Calculo", "Programacion", "Estadistica", "Laboratorio"]):
-                if any(m in materias_validadas for m in ["Calculo", "Programacion", "Estadistica", "Laboratorio"]):
-                    messagebox.showerror("Error de Materia", "No se pueden inscribir materias de la misma categoría.")
+        # Validar exclusividad por grupo
+        for grupo in grupos_excluyentes:
+            if materia in grupo:
+                if any(m in grupo for m in materias_validadas):
+                    messagebox.showerror(
+                        "Error de Materia",
+                        f"No se pueden inscribir juntas materias excluyentes del mismo grupo: {grupo}"
+                    )
                     return
 
-            # Verificar que los créditos no superen el límite
-            creditos_totales += MATERIAS_CREDITOS[materia]
-            if creditos_totales > 16:
-                messagebox.showerror("Error de Créditos", "El total de créditos no puede superar 16.")
-                return
+        # Verificar que los créditos no superen el límite
+        creditos_totales += MATERIAS_CREDITOS[materia]
+        if creditos_totales > 16:
+            messagebox.showerror("Error de Créditos", "El total de créditos no puede superar 16.")
+            return
 
-            # Añadir materia validada
-            materias_validadas.append(materia)
+        materias_validadas.append(materia)
 
-        estudiante.materias = materias_validadas
+     estudiante = Estudiante(cedula, nombre, carrera, materias, uc_aprobadas)
+     estudiante.materias = materias_validadas
 
-        destino = self.lista_ingresados if self.lista_destino.get() == "Ingresados" else self.lista_no_ingresados
+     destino = self.lista_ingresados if self.lista_destino.get() == "Ingresados" else self.lista_no_ingresados
 
-        for lista in [self.lista_ingresados, self.lista_no_ingresados]:
-            if lista.Buscar(cedula):
-                messagebox.showerror("Duplicado", "La cédula ya está registrada.")
-                return
+     # Insertar al final de la lista usando InsDespues
+     if destino.Vacia():
+        destino.InsComienzo(estudiante)
+     else:
+        ultimo_nodo = destino.Primero
+        while ultimo_nodo.prox is not None:
+            ultimo_nodo = ultimo_nodo.prox
+        destino.InsDespues(ultimo_nodo, estudiante)
 
-        # Insertar al final de la lista usando InsDespues
-        if destino.Vacia():
-            destino.InsComienzo(estudiante)  # Si la lista está vacía, inserta al comienzo
-        else:
-            # Encontramos el último nodo
-            ultimo_nodo = destino.Primero
-            while ultimo_nodo.prox is not None:
-                ultimo_nodo = ultimo_nodo.prox
-            destino.InsDespues(ultimo_nodo, estudiante)
+     self.actualizar_tablas()
+     self.limpiar_campos()
 
-        self.actualizar_tablas()
-        self.limpiar_campos()
+
+
+
     
     def eliminar_estudiante(self, lista):
         cedula = self.entries["cédula"].get().strip()
