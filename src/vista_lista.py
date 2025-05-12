@@ -1,8 +1,9 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from Estudiante import Estudiante
-from Lista import Lista 
-from Identificacion_estudiantes import VistaIdentificacion_estudiantes
+from Lista import Lista
+from collections import defaultdict
+from Identificacion_estudiante import VistaIdentificacion_estudiantes
 
 # Diccionario de materias y sus créditos
 MATERIAS_CREDITOS = {
@@ -24,7 +25,14 @@ MATERIAS_CREDITOS = {
     "Programacion No Numerica I": 3,
     "Programacion No Numerica II": 4,
 }
-
+grupos_excluyentes = [
+    ["Calculo I", "Calculo II", "Calculo III", "Calculo IV"],
+    ["Programacion I", "Programacion II", "Programacion III"],
+    ["Estadistica I", "Estadistica II", "Estadistica Matematica"],
+    ["Teoria de la Administracion I", "Tecnicas de la Administracion II"],
+    ["Laboratorio I", "Laboratorio II"],
+    ["Programacion No Numerica I", "Programacion No Numerica II"]
+]
 class VistaListaApp:
     def __init__(self, root):
         self.nodo_seleccionado = None
@@ -84,6 +92,7 @@ class VistaListaApp:
         self.lista_destino = tk.StringVar(value="Ingresados")
         tk.Radiobutton(self.frame_form, text="Ingresados", variable=self.lista_destino, value="Ingresados").grid(row=0, column=2)
         tk.Radiobutton(self.frame_form, text="No Ingresados", variable=self.lista_destino, value="No Ingresados").grid(row=1, column=2)
+        
 
         self.frame_btns = tk.Frame(root)
         self.frame_btns.pack(pady=5)
@@ -93,9 +102,14 @@ class VistaListaApp:
         tk.Button(self.frame_btns, text="Eliminar de No Ingresados", command=lambda: self.eliminar_estudiante(self.lista_no_ingresados)).grid(row=0, column=2, padx=5)
         tk.Button(self.frame_btns, text="Limpiar Campos", command=self.limpiar_campos).grid(row=0, column=3, padx=5)
 
-        tk.Button(self.frame_btns, text="Mover Todos a Ingresados", command=self.mover_todos_no_ingresados).grid(row=1, column=1, pady=5)
-        tk.Button(self.frame_btns, text="Mover Todos a No Ingresados", command=self.mover_todos_ingresados).grid(row=1, column=3, pady=5)
-        tk.Button(self.frame_btns, text="Identificacion de estudiantes", command=self.identificacion_estudiantes).grid(row=1, column=3, pady=5)
+        tk.Button(self.frame_btns, text="Mover Todos a Ingresados", command=self.mover_todos_no_ingresados).grid(row=1, column=0, pady=5)
+        tk.Button(self.frame_btns, text="Mover Todos a No Ingresados", command=self.mover_todos_ingresados).grid(row=1, column=1, pady=5)
+        tk.Button(self.frame_btns, text="Identificacion de estudiantes", command=self.identificacion_estudiantes).grid(row=1, column=2, pady=5)
+        tk.Button(
+            self.frame_btns,
+            text="Reportes Estadísticos",
+            command=self.mostrar_reportes
+        ).grid(row=1, column=3, columnspan=4, pady=5)
 
         self.canvas = tk.Canvas(self.root, bg="white")
         self.canvas.pack(fill=tk.BOTH, padx=20, pady=20, expand=True)
@@ -106,112 +120,166 @@ class VistaListaApp:
         frame = tk.Frame(self.frame_tablas)
         frame.grid(row=0, column=col, padx=10, sticky="nsew")
         tk.Label(frame, text=titulo).pack()
-        tree = ttk.Treeview(frame, columns=("Cedula", "Nombre", "Carrera", "Materias", "UC", "creditos totales"), show="headings", height=8)
+        tree = ttk.Treeview(frame, columns=("Cedula", "Nombre", "Carrera", "Materias", "UC"), show="headings", height=7)
         for col in tree["columns"]:
             tree.heading(col, text=col)
             tree.column(col, width=100)
         tree.pack(fill="x", padx=30)
         return tree
     
+    
     def identificacion_estudiantes(self):
         root = tk.Tk()
         VistaIdentificacion_estudiantes(root,self.lista_ingresados);
         root.mainloop()
-
-    def agregar_estudiante(self):
-        datos = [entry.get().strip() for entry in self.entries.values()]
-        if not all(datos):
-            messagebox.showwarning("Campos incompletos", "Todos los campos deben estar llenos.")
-            return
-
-        cedula, nombre, carrera, materias, uc_aprobadas = datos
         
-        estudiante = Estudiante(cedula, nombre, carrera, materias, uc_aprobadas)
+        
+    def agregar_estudiante(self):
+     datos = [entry.get().strip() for entry in self.entries.values()]
+     if not all(datos):
+        messagebox.showwarning("Campos incompletos", "Todos los campos deben estar llenos.")
+        return
 
-        # Validaciones campos de entrada
-        if not cedula.isdigit():
-            messagebox.showerror("Error de Validación", "La cédula debe contener solo números.")
-            return
-        if not uc_aprobadas.isdigit():
-            messagebox.showerror("Error de Validación", "Las UC Aprobadas deben ser un número.")
-            return
-        if not nombre.replace(" ", "").isalpha():
-            messagebox.showerror("Error de Validación", "El nombre solo debe contener letras.")
+     cedula, nombre, carrera, materias, uc_aprobadas = datos
+
+     # Validaciones campos de entrada
+     if not cedula.isdigit():
+        messagebox.showerror("Error de Validación", "La cédula debe contener solo números.")
+        return
+
+     # Validar que la cédula no esté repetida en ninguna lista
+     for lista in [self.lista_ingresados, self.lista_no_ingresados]:
+        if lista.Buscar(cedula):
+            messagebox.showerror("Duplicado", "La cédula ya está registrada.")
             return
 
-        materias = materias.split(",")
-        materias = [materia.strip() for materia in materias]
-        creditos_totales = 0
-        materias_validadas = []
-        for materia in materias:
-            if materia not in MATERIAS_CREDITOS:
-                messagebox.showerror("Error de Materia", f"La materia {materia} no existe en el diccionario.")
-                return
+     if not uc_aprobadas.isdigit():
+        messagebox.showerror("Error de Validación", "Las UC Aprobadas deben ser un número.")
+        return
+     if not nombre.replace(" ", "").isalpha():
+        messagebox.showerror("Error de Validación", "El nombre solo debe contener letras.")
+        return
 
-            # Validación de materias mutuamente excluyentes
-            if any(materia.startswith(m) for m in ["Calculo", "Programacion", "Estadistica", "Laboratorio"]):
-                if any(m in materias_validadas for m in ["Calculo", "Programacion", "Estadistica", "Laboratorio"]):
-                    messagebox.showerror("Error de Materia", "No se pueden inscribir materias de la misma categoría.")
+     materias = materias.split(",")
+     materias = [materia.strip() for materia in materias]
+
+     # Validación de materias duplicadas
+     if len(materias) != len(set(materias)):
+        messagebox.showerror("Error de Materia", "No se puede inscribir una misma materia más de una vez.")
+        return
+
+     creditos_totales = 0
+     materias_validadas = []
+
+     grupos_excluyentes = [
+        ["Calculo I", "Calculo II", "Calculo III", "Calculo IV"],
+        ["Programacion I", "Programacion II", "Programacion III"],
+        ["Estadistica I", "Estadistica II", "Estadistica Matematica"],
+        ["Teoria de la Administracion I", "Tecnicas de la Administracion II"],
+        ["Laboratorio I", "Laboratorio II"],
+        ["Programacion No Numerica I", "Programacion No Numerica II"]
+     ]
+
+     for materia in materias:
+        if materia not in MATERIAS_CREDITOS:
+            messagebox.showerror("Error de Materia", f"La materia {materia} no existe en el sistema.")
+            return
+
+        # Validar exclusividad por grupo
+        for grupo in grupos_excluyentes:
+            if materia in grupo:
+                if any(m in grupo for m in materias_validadas):
+                    messagebox.showerror(
+                        "Error de Materia",
+                        f"No se pueden inscribir juntas materias excluyentes del mismo grupo: {grupo}"
+                    )
                     return
 
-            # Verificar que los créditos no superen el límite
-            creditos_totales += MATERIAS_CREDITOS[materia]
-            # if creditos_totales > 16:
-            #     messagebox.showerror("Error de Créditos", "El total de créditos no puede superar 16.")
-            #     return
-
-            # Añadir materia validada
-            materias_validadas.append(materia)
-
-        estudiante.materias = materias_validadas
-        estudiante.creditos_totales = creditos_totales
-
-        destino = self.lista_ingresados if self.lista_destino.get() == "Ingresados" else self.lista_no_ingresados
-
-        for lista in [self.lista_ingresados, self.lista_no_ingresados]:
-            if lista.Buscar(cedula):
-                messagebox.showerror("Duplicado", "La cédula ya está registrada.")
-                return
-
-        # Insertar al final de la lista usando InsDespues
-        if destino.Vacia():
-            destino.InsComienzo(estudiante)  # Si la lista está vacía, inserta al comienzo
-        else:
-            # Encontramos el último nodo
-            ultimo_nodo = destino.Primero
-            while ultimo_nodo.prox is not None:
-                ultimo_nodo = ultimo_nodo.prox
-            destino.InsDespues(ultimo_nodo, estudiante)
-
-        print("creditos_totales")
-        self.actualizar_tablas()
-        self.limpiar_campos()
-    
-    def eliminar_estudiante(self, lista):
-        cedula = self.entries["cédula"].get().strip()
-        if not cedula:
-            messagebox.showwarning("Cédula Vacía", "Ingrese la cédula a eliminar.")
+        # Verificar que los créditos no superen el límite
+        creditos_totales += MATERIAS_CREDITOS[materia]
+        if creditos_totales > 16:
+            messagebox.showerror("Error de Créditos", "El total de créditos no puede superar 16.")
             return
 
+        materias_validadas.append(materia)
+
+     estudiante = Estudiante(cedula, nombre, carrera, materias, uc_aprobadas)
+     estudiante.materias = materias_validadas
+     estudiante.creditos_totales = creditos_totales
+
+     destino = self.lista_ingresados if self.lista_destino.get() == "Ingresados" else self.lista_no_ingresados
+
+     # Insertar al final de la lista usando InsDespues
+     if destino.Vacia():
+        destino.InsComienzo(estudiante)
+     else:
+        ultimo_nodo = destino.Primero
+        while ultimo_nodo.prox is not None:
+            ultimo_nodo = ultimo_nodo.prox
+        destino.InsDespues(ultimo_nodo, estudiante)
+
+     self.actualizar_tablas()
+     self.limpiar_campos()
+
+
+
+
+    
+    def eliminar_estudiante(self, lista):
+     cedula = self.entries["cédula"].get().strip()
+
+     if lista.Vacia():
+        messagebox.showinfo("Lista Vacía", "No hay estudiantes para eliminar.")
+        return
+
+     if not cedula:
+        # Eliminar el último estudiante
         p = lista.Primero
         ant = None
-        while p:
-            if p.info.identificacion == cedula:
-                if ant:
-                    lista.EliDespues(ant)
-                else:
-                    lista.EliComienzo()
-                self.actualizar_tablas()
-                self.limpiar_campos()
-                return
-            ant = p
-            p = p.prox
-        messagebox.showinfo("No encontrado", "Cédula no encontrada.")
+        if p.prox is None:
+            lista.EliComienzo()
+        else:
+            while p.prox:
+                ant = p
+                p = p.prox
+            lista.EliDespues(ant)
+        self.actualizar_tablas()
+        self.limpiar_campos()
+        return
+
+    # Buscar y eliminar por cédula
+     p = lista.Primero
+     ant = None
+     while p:
+        if p.info.identificacion == cedula:
+            if ant:
+                lista.EliDespues(ant)
+            else:
+                lista.EliComienzo()
+            self.actualizar_tablas()
+            self.limpiar_campos()
+            return
+        ant = p
+        p = p.prox
+
+     messagebox.showinfo("No encontrado", "Cédula no encontrada.")
+
 
     def limpiar_campos(self):
         for entry in self.entries.values():
             entry.delete(0, tk.END)
         self.lista_destino.set("Ingresados")
+
+    def actualizar_tablas(self):
+        for tree, lista in [(self.tree_ingresados, self.lista_ingresados), (self.tree_no_ingresados, self.lista_no_ingresados)]:
+            for item in tree.get_children():
+                tree.delete(item)
+
+            for estudiante in lista.obtener_todos():
+                tree.insert("", "end", values=(estudiante.cedula, estudiante.nombre, estudiante.carrera, ", ".join(estudiante.materias), estudiante.uc_aprobadas))
+
+        self.contador_ingresados.config(text=f"Total Ingresados: {self.lista_ingresados.obtener_tamano()}")
+        self.contador_no_ingresados.config(text=f"Total No Ingresados: {self.lista_no_ingresados.obtener_tamano()}")
 
     def mover_todos_no_ingresados(self):
         self.lista_ingresados.pasarListaAux(self.lista_no_ingresados, self.lista_ingresados)
@@ -248,7 +316,7 @@ class VistaListaApp:
         p = lista.Primero
         while p:
             if texto in p.info.identificacion.lower():
-                tree.insert("", tk.END, values=p.info.getInfo())
+                tree.insert("", tk.END, values=[p.info.identificacion, p.info.nombre, p.info.edad,", ".join(p.info.materias), p.info.uc_aprobadas])
             p = p.prox
 
     def actualizar_tablas(self):
@@ -299,6 +367,169 @@ class VistaListaApp:
     def seleccionar_nodo(self,nodo):
         self.nodo_seleccionado = nodo
         self.actualizar_grafo()
+
+    def mostrar_reportes(self):
+        reportes_window = tk.Toplevel(self.root)
+        reportes_window.title("Reportes Estadísticos")
+        reportes_window.geometry("900x600")
+
+        notebook = ttk.Notebook(reportes_window)
+        notebook.pack(fill=tk.BOTH, expand=True)
+
+        tab_resumen = ttk.Frame(notebook)
+        notebook.add(tab_resumen, text="Resumen General")
+        self._crear_tab_resumen(tab_resumen)
+
+        tab_carreras = ttk.Frame(notebook)
+        notebook.add(tab_carreras, text="Por Carrera")
+        self._crear_tab_carreras(tab_carreras)
+
+        tab_academica = ttk.Frame(notebook)
+        notebook.add(tab_academica, text="Datos Académicos")
+        self._crear_tab_academica(tab_academica)
+
+    def _crear_tab_resumen(self, parent):
+        frame = ttk.Frame(parent)
+        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+        total_ing = self.lista_ingresados.Contar()
+        total_no_ing = self.lista_no_ingresados.Contar()
+        total = total_ing + total_no_ing
+
+        ttk.Label(frame, text="RESUMEN ESTADÍSTICO", font=('Arial', 14, 'bold')).pack(pady=10)
+
+        metrics_frame = ttk.Frame(frame)
+        metrics_frame.pack(fill=tk.X, pady=10)
+
+        ttk.Label(metrics_frame, text=f"Total Estudiantes: {total}", font=('Arial', 12)).grid(row=0, column=0, padx=20)
+        ttk.Label(metrics_frame, text=f"Ingresados: {total_ing}", font=('Arial', 12)).grid(row=0, column=1, padx=20)
+        ttk.Label(metrics_frame, text=f"No Ingresados: {total_no_ing}", font=('Arial', 12)).grid(row=0, column=2,
+                                                                                                 padx=20)
+
+        if total > 0:
+            ttk.Label(metrics_frame, text=f"% Ingresados: {(total_ing / total) * 100:.1f}%", font=('Arial', 12)).grid(
+                row=1, column=1, pady=10)
+
+        if total > 0:
+            canvas = tk.Canvas(frame, width=400, height=300, bg='white')
+            canvas.pack(pady=20)
+
+            start_angle = 0
+            extent_ing = (total_ing / total) * 360
+            extent_no_ing = (total_no_ing / total) * 360
+
+            canvas.create_arc(50, 50, 350, 350, start=start_angle, extent=extent_ing, fill="#4CAF50", outline="white")
+            canvas.create_arc(50, 50, 350, 350, start=start_angle + extent_ing, extent=extent_no_ing, fill="#F44336",
+                              outline="white")
+
+            canvas.create_text(200, 400, text=f"Ingresados: {total_ing} ({extent_ing / 3.6:.1f}%)", fill="#4CAF50",
+                               font=('Arial', 10))
+            canvas.create_text(200, 420, text=f"No Ingresados: {total_no_ing} ({extent_no_ing / 3.6:.1f}%)",
+                               fill="#F44336", font=('Arial', 10))
+
+    def _crear_tab_carreras(self, parent):
+        frame = ttk.Frame(parent)
+        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+        carreras = defaultdict(int)
+
+        for lista in [self.lista_ingresados, self.lista_no_ingresados]:
+            p = lista.Primero
+            while p:
+                estudiante = p.info
+                carrera = ""
+
+                if hasattr(estudiante, 'carrera'):
+                    carrera = estudiante.carrera
+                elif hasattr(estudiante, 'getInfo'):
+                    datos = estudiante.getInfo()
+                    carrera = datos[2] if len(datos) > 2 else ""
+
+                carrera = carrera.strip() if carrera else "No registrada"
+                carreras[carrera] += 1
+                p = p.prox
+
+        if not carreras:
+            ttk.Label(frame, text="No hay datos de carreras disponibles", font=('Arial', 12)).pack(pady=50)
+            return
+
+        tree = ttk.Treeview(frame, columns=('Carrera', 'Total', '%'), show='headings')
+        tree.heading('Carrera', text='Carrera')
+        tree.heading('Total', text='Total')
+        tree.heading('%', text='%')
+
+        tree.column('Carrera', width=400)
+        tree.column('Total', width=150, anchor='center')
+        tree.column('%', width=150, anchor='center')
+
+        total_estudiantes = sum(carreras.values())
+
+        for carrera, total in sorted(carreras.items(), key=lambda x: x[1], reverse=True):
+            porcentaje = (total / total_estudiantes) * 100 if total_estudiantes > 0 else 0
+
+            tree.insert('', 'end', values=(
+                carrera,
+                total,
+                f"{porcentaje:.1f}%"
+            ))
+
+        tree.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        if carreras:
+            canvas = tk.Canvas(frame, width=800, height=300, bg='white')
+            canvas.pack(pady=20)
+
+            max_cant = max(carreras.values())
+            x = 50
+            bar_width = 40
+            spacing = 20
+
+            for i, (carrera, total) in enumerate(sorted(carreras.items(), key=lambda x: x[1], reverse=True)[:10]):
+                height = (total / max_cant) * 250
+                color = "#{:06x}".format(i * 0x333333 % 0xFFFFFF)
+
+                canvas.create_rectangle(x, 280 - height, x + bar_width, 280, fill=color, outline='black')
+                canvas.create_text(x + bar_width / 2, 290, text=carrera[:15] + ("..." if len(carrera) > 15 else ""),
+                                   angle=45, anchor='ne')
+                canvas.create_text(x + bar_width / 2, 280 - height - 10, text=str(total))
+                x += bar_width + spacing
+
+    def _crear_tab_academica(self, parent):
+        frame = ttk.Frame(parent)
+        frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
+
+        uc_aprobadas = []
+        materias = defaultdict(int)
+
+        for lista in [self.lista_ingresados, self.lista_no_ingresados]:
+            p = lista.Primero
+            while p:
+                if hasattr(p.info, 'uc_aprobadas'):
+                    try:
+                        uc_aprobadas.append(int(p.info.uc_aprobadas))
+                    except:
+                        pass
+                if hasattr(p.info, 'materias'):
+                    materias[", ".join(p.info.materias)] += 1
+                p = p.prox
+
+        ttk.Label(frame, text="DATOS ACADÉMICOS", font=('Arial', 14, 'bold')).pack(pady=10)
+
+        if uc_aprobadas:
+            stats_frame = ttk.Frame(frame)
+            stats_frame.pack(fill=tk.X, pady=10)
+
+            ttk.Label(stats_frame, text=f"UC aprobadas (promedio): {sum(uc_aprobadas) / len(uc_aprobadas):.1f}",
+                      font=('Arial', 10)).pack(side=tk.LEFT, padx=20)
+            ttk.Label(stats_frame, text=f"Mínimo: {min(uc_aprobadas)}", font=('Arial', 10)).pack(side=tk.LEFT, padx=20)
+            ttk.Label(stats_frame, text=f"Máximo: {max(uc_aprobadas)}", font=('Arial', 10)).pack(side=tk.LEFT, padx=20)
+
+        if materias:
+            ttk.Label(frame, text="Materias más frecuentes:", font=('Arial', 12)).pack(pady=10, anchor='w')
+
+            for materia, cant in sorted(materias.items(), key=lambda x: x[1], reverse=True)[:5]:
+                ttk.Label(frame, text=f"- {materia}: {cant} estudiantes", font=('Arial', 10)).pack(anchor='w', padx=20)
+
 
 if __name__ == "__main__":
     root = tk.Tk()
