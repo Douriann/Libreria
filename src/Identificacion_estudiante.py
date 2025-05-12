@@ -17,7 +17,7 @@ class VistaIdentificacion_estudiantes:
         self.lista_medio = Lista()
         self.lista_bajo = Lista()
         
-        self.titulo = tk.Label(self.root, text="Gestión de Estudiantes", font=("Arial", 20))
+        self.titulo = tk.Label(self.root, text="Clasificación de estudiantes", font=("Arial", 20))
         self.titulo.pack(side="top", pady=10)
 
         self.frame_tablas = tk.Frame(root)
@@ -25,7 +25,7 @@ class VistaIdentificacion_estudiantes:
         
         self.frame_tablas.grid_columnconfigure(0, weight=1)
 
-        self.tree_excesivos = self.crear_tabla("Estudiantes con cargas academicas excesivas", 0)
+        self.tree_excesivos = self.crear_tabla("Estudiantes con cargas academicas altas", 0)
         self.tree_medios = self.crear_tabla("Estudiantes con cargas academicas normales", 1)
         self.tree_bajos = self.crear_tabla("Estudiantes con cargas academicas bajas", 2)
 
@@ -62,7 +62,7 @@ class VistaIdentificacion_estudiantes:
             
             informacion[3] = len(p.info.materias)
             informacion.append(p.info.creditos_totales)
-            if p.info.creditos_totales > 16 and len(p.info.materias) >= 7:
+            if p.info.creditos_totales >= 14 and len(p.info.materias) >= 4:
                 self.tree_excesivos.insert("", tk.END, values=informacion)
             elif p.info.creditos_totales < 8 and len(p.info.materias) <= 3:
                 self.tree_bajos.insert("", tk.END, values=informacion)
