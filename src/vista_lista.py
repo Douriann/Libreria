@@ -103,6 +103,7 @@ class VistaListaApp:
         self.frame_btns.pack(pady=5)
 
 
+
         tk.Button(self.frame_btns, text="Agregar Estudiante", command=self.agregar_estudiante).grid(row=0, column=0, padx=5)
         tk.Button(self.frame_btns, text="Eliminar de Ingresados", command=lambda: self.eliminar_estudiante(self.lista_ingresados)).grid(row=0, column=1, padx=5)
         tk.Button(self.frame_btns, text="Eliminar de No Ingresados", command=lambda: self.eliminar_estudiante(self.lista_no_ingresados)).grid(row=0, column=2, padx=5)
@@ -120,26 +121,9 @@ class VistaListaApp:
 
         btn_style = {'padx': 5, 'pady': 2, 'width': 20}
 
-        tk.Button(self.frame_btns, text="Agregar Estudiante", command=self.agregar_estudiante, **btn_style).grid(row=0,
-                                                                                                                 column=0)
-        tk.Button(self.frame_btns, text="Eliminar de Ingresados",
-                  command=lambda: self.eliminar_estudiante(self.lista_ingresados), **btn_style).grid(row=0, column=1)
-        tk.Button(self.frame_btns, text="Eliminar de No Ingresados",
-                  command=lambda: self.eliminar_estudiante(self.lista_no_ingresados), **btn_style).grid(row=0, column=2)
-        tk.Button(self.frame_btns, text="Limpiar Campos", command=self.limpiar_campos, **btn_style).grid(row=0,
-                                                                                                         column=3)
+       
+        
 
-        tk.Button(self.frame_btns, text="Mover Todos a Ingresados", command=self.mover_todos_no_ingresados,
-                  **btn_style).grid(row=1, column=0, columnspan=2)
-        tk.Button(self.frame_btns, text="Mover Todos a No Ingresados", command=self.mover_todos_ingresados,
-                  **btn_style).grid(row=1, column=2, columnspan=2)
-
-        tk.Button(
-            self.frame_btns,
-            text="Reportes Estadísticos",
-            command=self.mostrar_reportes,
-            **btn_style
-        ).grid(row=2, column=0, columnspan=4, pady=5)
         # self.label_img_grafo = tk.Label(root)
         # self.label_img_grafo.pack(pady=10)
         # Canvas para dibujar
@@ -252,7 +236,9 @@ class VistaListaApp:
      estudiante.materias = materias_validadas
      estudiante.creditos_totales = creditos_totales
 
+
      destino = self.lista_ingresados if self.lista_destino.get() == "Ingresados" else self.lista_no_ingresados
+
 
      # Insertar al final de la lista usando InsDespues
      if destino.Vacia():
@@ -272,8 +258,8 @@ class VistaListaApp:
 
     
 
-        self.actualizar_tablas()
-        self.limpiar_campos()
+
+
 
 
     def eliminar_estudiante(self, lista):
