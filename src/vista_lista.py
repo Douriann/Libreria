@@ -3,7 +3,36 @@ from tkinter import ttk, messagebox
 from Estudiante import Estudiante
 from Lista import Lista
 from collections import defaultdict
+from Identificacion_estudiante import VistaIdentificacion_estudiantes
 
+# Diccionario de materias y sus créditos
+MATERIAS_CREDITOS = {
+    "Calculo I": 4,
+    "Calculo II": 4,
+    "Calculo III": 4,
+    "Calculo IV": 4,
+    "Programacion I": 3,
+    "Programacion II": 3,
+    "Programacion III": 3,
+    "Estadistica I": 4,
+    "Estadistica II": 4,
+    "Estadistica Matematica": 4,
+    "Teoria de la Administracion I": 4,
+    "Tecnicas de la Administracion II": 4,
+    "Laboratorio I": 2,
+    "Laboratorio II": 2,
+    "Programacion Numerica": 2,
+    "Programacion No Numerica I": 3,
+    "Programacion No Numerica II": 4,
+}
+grupos_excluyentes = [
+    ["Calculo I", "Calculo II", "Calculo III", "Calculo IV"],
+    ["Programacion I", "Programacion II", "Programacion III"],
+    ["Estadistica I", "Estadistica II", "Estadistica Matematica"],
+    ["Teoria de la Administracion I", "Tecnicas de la Administracion II"],
+    ["Laboratorio I", "Laboratorio II"],
+    ["Programacion No Numerica I", "Programacion No Numerica II"]
+]
 
 class VistaListaApp:
     def __init__(self, root):
@@ -61,6 +90,10 @@ class VistaListaApp:
             self.entries[campo.lower()] = entry
 
         self.lista_destino = tk.StringVar(value="Ingresados")
+
+        tk.Radiobutton(self.frame_form, text="Ingresados", variable=self.lista_destino, value="Ingresados").grid(row=0, column=2)
+        tk.Radiobutton(self.frame_form, text="No Ingresados", variable=self.lista_destino, value="No Ingresados").grid(row=1, column=2)
+        
         tk.Radiobutton(self.frame_form, text="Ingresados", variable=self.lista_destino, value="Ingresados").grid(row=0,
                                                                                                                  column=2)
         tk.Radiobutton(self.frame_form, text="No Ingresados", variable=self.lista_destino, value="No Ingresados").grid(
@@ -68,6 +101,22 @@ class VistaListaApp:
 
         self.frame_btns = tk.Frame(root)
         self.frame_btns.pack(pady=5)
+
+
+        tk.Button(self.frame_btns, text="Agregar Estudiante", command=self.agregar_estudiante).grid(row=0, column=0, padx=5)
+        tk.Button(self.frame_btns, text="Eliminar de Ingresados", command=lambda: self.eliminar_estudiante(self.lista_ingresados)).grid(row=0, column=1, padx=5)
+        tk.Button(self.frame_btns, text="Eliminar de No Ingresados", command=lambda: self.eliminar_estudiante(self.lista_no_ingresados)).grid(row=0, column=2, padx=5)
+        tk.Button(self.frame_btns, text="Limpiar Campos", command=self.limpiar_campos).grid(row=0, column=3, padx=5)
+
+        tk.Button(self.frame_btns, text="Mover Todos a Ingresados", command=self.mover_todos_no_ingresados).grid(row=1, column=0, pady=5)
+        tk.Button(self.frame_btns, text="Mover Todos a No Ingresados", command=self.mover_todos_ingresados).grid(row=1, column=1, pady=5)
+        tk.Button(self.frame_btns, text="Identificacion de estudiantes", command=self.identificacion_estudiantes).grid(row=1, column=2, pady=5)
+        tk.Button(
+            self.frame_btns,
+            text="Reportes Estadísticos",
+            command=self.mostrar_reportes
+        ).grid(row=1, column=3, columnspan=4, pady=5)
+
 
         btn_style = {'padx': 5, 'pady': 2, 'width': 20}
 
@@ -94,6 +143,7 @@ class VistaListaApp:
         # self.label_img_grafo = tk.Label(root)
         # self.label_img_grafo.pack(pady=10)
         # Canvas para dibujar
+
         self.canvas = tk.Canvas(self.root, bg="white")
         self.canvas.pack(fill=tk.BOTH, padx=20, pady=20, expand=True)
 
@@ -109,12 +159,64 @@ class VistaListaApp:
             tree.column(col, width=100)
         tree.pack(fill="x", padx=30)
         return tree
-
+    
+    
+    def identificacion_estudiantes(self):
+        root = tk.Tk()
+        VistaIdentificacion_estudiantes(root,self.lista_ingresados);
+        root.mainloop()
+        
+        
     def agregar_estudiante(self):
-        datos = [entry.get().strip() for entry in self.entries.values()]
-        if not all(datos):
-            messagebox.showwarning("Campos incompletos", "Todos los campos deben estar llenos.")
+     datos = [entry.get().strip() for entry in self.entries.values()]
+     if not all(datos):
+        messagebox.showwarning("Campos incompletos", "Todos los campos deben estar llenos.")
+        return
+
+     cedula, nombre, carrera, materias, uc_aprobadas = datos
+
+     # Validaciones campos de entrada
+     if not cedula.isdigit():
+        messagebox.showerror("Error de Validación", "La cédula debe contener solo números.")
+        return
+
+     # Validar que la cédula no esté repetida en ninguna lista
+     for lista in [self.lista_ingresados, self.lista_no_ingresados]:
+        if lista.Buscar(cedula):
+            messagebox.showerror("Duplicado", "La cédula ya está registrada.")
             return
+
+
+     if not uc_aprobadas.isdigit():
+        messagebox.showerror("Error de Validación", "Las UC Aprobadas deben ser un número.")
+        return
+     if not nombre.replace(" ", "").isalpha():
+        messagebox.showerror("Error de Validación", "El nombre solo debe contener letras.")
+        return
+
+     materias = materias.split(",")
+     materias = [materia.strip() for materia in materias]
+
+     # Validación de materias duplicadas
+     if len(materias) != len(set(materias)):
+        messagebox.showerror("Error de Materia", "No se puede inscribir una misma materia más de una vez.")
+        return
+
+     creditos_totales = 0
+     materias_validadas = []
+
+     grupos_excluyentes = [
+        ["Calculo I", "Calculo II", "Calculo III", "Calculo IV"],
+        ["Programacion I", "Programacion II", "Programacion III"],
+        ["Estadistica I", "Estadistica II", "Estadistica Matematica"],
+        ["Teoria de la Administracion I", "Tecnicas de la Administracion II"],
+        ["Laboratorio I", "Laboratorio II"],
+        ["Programacion No Numerica I", "Programacion No Numerica II"]
+     ]
+
+     for materia in materias:
+        if materia not in MATERIAS_CREDITOS:
+            messagebox.showerror("Error de Materia", f"La materia {materia} no existe en el sistema.")
 
         cedula, nombre, carrera, materias, uc_aprobadas = datos
 
@@ -125,42 +227,110 @@ class VistaListaApp:
             return
         if not uc_aprobadas.isdigit():
             messagebox.showerror("Error de Validación", "Las UC Aprobadas deben ser un número.")
-            return
-        if not nombre.replace(" ", "").isalpha():
-            messagebox.showerror("Error de Validación", "El nombre solo debe contener letras.")
+
             return
 
-        destino = self.lista_ingresados if self.lista_destino.get() == "Ingresados" else self.lista_no_ingresados
+        # Validar exclusividad por grupo
+        for grupo in grupos_excluyentes:
+            if materia in grupo:
+                if any(m in grupo for m in materias_validadas):
+                    messagebox.showerror(
+                        "Error de Materia",
+                        f"No se pueden inscribir juntas materias excluyentes del mismo grupo: {grupo}"
+                    )
+                    return
 
-        for lista in [self.lista_ingresados, self.lista_no_ingresados]:
-            if lista.Buscar(cedula):
-                messagebox.showerror("Duplicado", "La cédula ya está registrada.")
-                return
+        # Verificar que los créditos no superen el límite
+        creditos_totales += MATERIAS_CREDITOS[materia]
+        if creditos_totales > 16:
+            messagebox.showerror("Error de Créditos", "El total de créditos no puede superar 16.")
+            return
 
+        materias_validadas.append(materia)
+
+     estudiante = Estudiante(cedula, nombre, carrera, materias, uc_aprobadas)
+     estudiante.materias = materias_validadas
+     estudiante.creditos_totales = creditos_totales
+
+     destino = self.lista_ingresados if self.lista_destino.get() == "Ingresados" else self.lista_no_ingresados
+
+     # Insertar al final de la lista usando InsDespues
+     if destino.Vacia():
         destino.InsComienzo(estudiante)
+
+     else:
+        ultimo_nodo = destino.Primero
+        while ultimo_nodo.prox is not None:
+            ultimo_nodo = ultimo_nodo.prox
+        destino.InsDespues(ultimo_nodo, estudiante)
+
+     self.actualizar_tablas()
+     self.limpiar_campos()
+
+
+
+
+    
+
         self.actualizar_tablas()
         self.limpiar_campos()
 
-    def eliminar_estudiante(self, lista):
-        cedula = self.entries["cédula"].get().strip()
-        if not cedula:
-            messagebox.showwarning("Cédula Vacía", "Ingrese la cédula a eliminar.")
-            return
 
+    def eliminar_estudiante(self, lista):
+     cedula = self.entries["cédula"].get().strip()
+
+     if lista.Vacia():
+        messagebox.showinfo("Lista Vacía", "No hay estudiantes para eliminar.")
+        return
+
+     if not cedula:
+        # Eliminar el último estudiante
         p = lista.Primero
         ant = None
-        while p:
-            if p.info.identificacion == cedula:
-                if ant:
-                    lista.EliDespues(ant)
-                else:
-                    lista.EliComienzo()
-                self.actualizar_tablas()
-                self.limpiar_campos()
-                return
-            ant = p
-            p = p.prox
-        messagebox.showinfo("No encontrado", "Cédula no encontrada.")
+        if p.prox is None:
+            lista.EliComienzo()
+        else:
+            while p.prox:
+                ant = p
+                p = p.prox
+            lista.EliDespues(ant)
+        self.actualizar_tablas()
+        self.limpiar_campos()
+        return
+
+    # Buscar y eliminar por cédula
+     p = lista.Primero
+     ant = None
+     while p:
+        if p.info.identificacion == cedula:
+            if ant:
+                lista.EliDespues(ant)
+            else:
+                lista.EliComienzo()
+            self.actualizar_tablas()
+            self.limpiar_campos()
+            return
+        ant = p
+        p = p.prox
+
+     messagebox.showinfo("No encontrado", "Cédula no encontrada.")
+
+
+    def limpiar_campos(self):
+        for entry in self.entries.values():
+            entry.delete(0, tk.END)
+        self.lista_destino.set("Ingresados")
+
+    def actualizar_tablas(self):
+        for tree, lista in [(self.tree_ingresados, self.lista_ingresados), (self.tree_no_ingresados, self.lista_no_ingresados)]:
+            for item in tree.get_children():
+                tree.delete(item)
+
+            for estudiante in lista.obtener_todos():
+                tree.insert("", "end", values=(estudiante.cedula, estudiante.nombre, estudiante.carrera, ", ".join(estudiante.materias), estudiante.uc_aprobadas))
+
+        self.contador_ingresados.config(text=f"Total Ingresados: {self.lista_ingresados.obtener_tamano()}")
+        self.contador_no_ingresados.config(text=f"Total No Ingresados: {self.lista_no_ingresados.obtener_tamano()}")
 
     def mover_todos_no_ingresados(self):
         self.lista_ingresados.pasarListaAux(self.lista_no_ingresados, self.lista_ingresados)
@@ -171,13 +341,13 @@ class VistaListaApp:
         self.actualizar_tablas()
 
     def autocompletar_desde_tabla(self, tree):
-        item = tree.selection()
-        if item:
-            datos = tree.item(item[0])["values"]
-            claves = list(self.entries.keys())
-            for i in range(len(claves)):
-                self.entries[claves[i]].delete(0, tk.END)
-                self.entries[claves[i]].insert(0, datos[i])
+        selected = tree.selection()
+        if selected:
+            item = tree.item(selected[0])
+            for key, value in zip(self.entries.keys(), item["values"]):
+                self.entries[key].delete(0, tk.END)
+                self.entries[key].insert(0, value)
+
 
     def limpiar_campos(self):
         for entry in self.entries.values():
@@ -197,7 +367,7 @@ class VistaListaApp:
         p = lista.Primero
         while p:
             if texto in p.info.identificacion.lower():
-                tree.insert("", tk.END, values=p.info.getInfo())
+                tree.insert("", tk.END, values=[p.info.identificacion, p.info.nombre, p.info.edad,", ".join(p.info.materias), p.info.uc_aprobadas])
             p = p.prox
 
     def actualizar_tablas(self):
@@ -391,7 +561,11 @@ class VistaListaApp:
                     except:
                         pass
                 if hasattr(p.info, 'materias'):
+
+                    materias[", ".join(p.info.materias)] += 1
+
                     materias[p.info.materias] += 1
+
                 p = p.prox
 
         ttk.Label(frame, text="DATOS ACADÉMICOS", font=('Arial', 14, 'bold')).pack(pady=10)

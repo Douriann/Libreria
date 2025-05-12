@@ -5,6 +5,8 @@ class Estudiante:
         self.edad = edad
         self.materias = materias
         self.uc_aprobadas = uc_aprobadas
+        self.creditos_totales = 0
     
     def getInfo(self):
         return [self.identificacion, self.nombre, self.edad, self.materias, self.uc_aprobadas]
+    
