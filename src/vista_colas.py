@@ -151,8 +151,8 @@ scrollbar_horizontal.config(command=canvas.xview)
 
 # Etiqueta para mostrar el anuncio del estudiante siendo atendido
 anuncio = tk.Label(ventana, text="No hay estudiantes en la cola",
-font=("Arial", 12), fg="black", justify=tk.LEFT)
-anuncio.place(x=500, y=300) #OJO, cambiar la posición de la etiqueta para que no se superponga con el canvas
+font=("Arial", 12), fg="black", justify=tk.LEFT, highlightthickness=1, highlightbackground="black")
+anuncio.place(relx=0.8, rely=0.7, anchor="e")
 
 # Creando un frame (contenedor) para los botones y entradas
 # y organizando su disposición
@@ -167,44 +167,44 @@ label_txt_entrada = tk.Label(frame_entrada, text="Inserte los datos necesarios\n
 label_txt_entrada.pack(anchor="w")
 frame_cedula = tk.Frame(frame_entrada)
 frame_cedula.pack(anchor="w")
-label_txt_cedula = tk.Label(frame_cedula, text="Cédula:")
+label_txt_cedula = tk.Label(frame_cedula, text="Cédula:", width=7, anchor="w")
 label_txt_cedula.pack(side=tk.LEFT)
-entry_cedula = tk.Entry(frame_cedula, width=10)
+entry_cedula = tk.Entry(frame_cedula)
 entry_cedula.pack(side=tk.LEFT, padx=5)
 
 frame_nombre = tk.Frame(frame_entrada)
 frame_nombre.pack(anchor="w")
-label_txt_nombre = tk.Label(frame_nombre, text="Nombre:")
+label_txt_nombre = tk.Label(frame_nombre, text="Nombre:", width=7, anchor="w")
 label_txt_nombre.pack(side=tk.LEFT)
-entry_nombre = tk.Entry(frame_nombre, width=10)
+entry_nombre = tk.Entry(frame_nombre)
 entry_nombre.pack(side=tk.LEFT, padx=5)
 
 frame_edad = tk.Frame(frame_entrada)
 frame_edad.pack(anchor="w")
-label_txt_edad = tk.Label(frame_edad, text="Edad:")
+label_txt_edad = tk.Label(frame_edad, text="Edad:", width=7, anchor="w")
 label_txt_edad.pack(side=tk.LEFT)
-entry_edad = tk.Entry(frame_edad , width=10)
+entry_edad = tk.Entry(frame_edad)
 entry_edad.pack(side=tk.LEFT, padx=5)
 
 frame_carrera = tk.Frame(frame_entrada)
 frame_carrera.pack(anchor="w")
-label_txt_carrera = tk.Label(frame_carrera, text="Carrera:")
+label_txt_carrera = tk.Label(frame_carrera, text="Carrera:" , width=7, anchor="w")
 label_txt_carrera.pack(side=tk.LEFT)
-entry_carrera = tk.Entry(frame_carrera , width=10)
+entry_carrera = tk.Entry(frame_carrera)
 entry_carrera.pack(side=tk.LEFT , padx=5)
 
 frame_razon = tk.Frame(frame_entrada)
 frame_razon.pack(anchor="w")
-label_txt_razon = tk.Label(frame_razon, text="Razón:")
+label_txt_razon = tk.Label(frame_razon, text="Razón:", width=7, anchor="w")
 label_txt_razon.pack(side=tk.LEFT)
-entry_razon = tk.Entry(frame_razon, width=10)
+entry_razon = tk.Entry(frame_razon)
 entry_razon.pack(side=tk.LEFT , padx=5)
 
 frame_prioridad = tk.Frame(frame_entrada)
 frame_prioridad.pack(anchor="w")
-label_txt_prioridad = tk.Label(frame_prioridad, text="Prioridad:")
+label_txt_prioridad = tk.Label(frame_prioridad, text="Prioridad:", width=7, anchor="w")
 label_txt_prioridad.pack(side=tk.LEFT)
-entry_prioridad = tk.Entry(frame_prioridad, width=10)
+entry_prioridad = tk.Entry(frame_prioridad)
 entry_prioridad.pack(side=tk.LEFT , padx=5)
 
 btn_insertar = tk.Button(frame_botones, text="Insertar", command=insertar)
