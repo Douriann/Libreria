@@ -73,9 +73,10 @@ def insertar():
     edad = entry_edad.get()
     carrera = entry_carrera.get()
     razon = entry_razon.get()
+    prioridad = int(entry_prioridad.get())
     
-    if (cedula and nombre and edad and carrera and razon):
-        estudiante = Estudiante(cedula, nombre, edad, carrera, razon)
+    if (cedula and nombre and edad and carrera and razon and prioridad):
+        estudiante = Estudiante(cedula, nombre, edad, carrera, razon, prioridad)
         if cola.Insertar(estudiante):
             dibujar_cola()
             estudiante.mostrar_informacion()
@@ -96,6 +97,7 @@ def limpiar_entradas():
     entry_edad.delete(0, tk.END)
     entry_carrera.delete(0, tk.END)
     entry_razon.delete(0, tk.END)
+    entry_prioridad.delete(0, tk.END)
 
 # Remover elemento de la cola
 def remover():
@@ -120,7 +122,20 @@ def cola_cabe_en_canvas():
 
     return espacio_necesario <= ancho_canvas
 
-
+def ordenar_prioridad():
+    global cola
+    cola_aux = Cola()
+    i = 1
+    while i < 11:
+        p = cola.Frente
+        while p is not None:
+            if (p.info.prioridad == i):
+                cola_aux.Insertar(p.info)
+            p = p.prox
+        i += 1
+    cola_aux.MostrarContenido()
+    cola = cola_aux
+    dibujar_cola()
 #Creando el frame para el canvas
 frame_canvas = tk.Frame(ventana)
 frame_canvas.pack(side=tk.TOP)
@@ -185,11 +200,21 @@ label_txt_razon.pack(side=tk.LEFT)
 entry_razon = tk.Entry(frame_razon, width=10)
 entry_razon.pack(side=tk.LEFT , padx=5)
 
+frame_prioridad = tk.Frame(frame_entrada)
+frame_prioridad.pack(anchor="w")
+label_txt_prioridad = tk.Label(frame_prioridad, text="Prioridad:")
+label_txt_prioridad.pack(side=tk.LEFT)
+entry_prioridad = tk.Entry(frame_prioridad, width=10)
+entry_prioridad.pack(side=tk.LEFT , padx=5)
+
 btn_insertar = tk.Button(frame_botones, text="Insertar", command=insertar)
 btn_insertar.pack(side=tk.LEFT, padx=5)
 
 btn_remover = tk.Button(frame_botones, text="Remover", command=remover)
 btn_remover.pack(side=tk.LEFT, padx=5)
+
+btn_ordenar = tk.Button(frame_botones, text="Ordenar por prioridad", command=ordenar_prioridad)
+btn_ordenar.pack(side=tk.LEFT, padx=5)
 
 # Mostrar cola inicial
 dibujar_cola()
