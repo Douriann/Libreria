@@ -17,6 +17,7 @@ def dibujar_cola():
     canvas.delete("all")  # Limpiar el canvas antes de redibujar
 
     if cola.Vacia():
+        canvas.create_text(375, 40, text="[Espacio en memoria]", font=("Arial", 14))
         canvas.create_text(375, 80, text="[La cola está vacía]", font=("Arial", 14))
         canvas.create_rectangle(320, 130, 430, 190, fill="lightblue")
         canvas.create_line(410, 130, 410, 190, fill="black")
@@ -29,6 +30,7 @@ def dibujar_cola():
 
     p = cola.Frente
     while p is not None:
+        canvas.create_text(375, 40, text="[Espacio en memoria]", font=("Arial", 14))
         # Dibujar nodo (círculo + texto)
         canvas.create_rectangle(x, y-30, x+110, y+30, fill="lightblue")
         canvas.create_text(x+45, y, text=str(p.info.cedula), font=("Arial", 12))
@@ -61,13 +63,19 @@ def mostrar_estudiante_atendido(estudiante):
 
 # Función para insertar un elemento en la cola
 def insertar():
+    if not cola_cabe_en_canvas():
+        messagebox.showwarning("Error", "¡La cola está llena (memoria llena)!")
+        canvas.create_text(375, 80, text="[Cola llena (memoria llena)]", font=("Arial", 14))
+        return
+    
     cedula = entry_cedula.get()
     nombre = entry_nombre.get()
     edad = entry_edad.get()
     carrera = entry_carrera.get()
     razon = entry_razon.get()
-    estudiante = Estudiante(cedula, nombre, edad, carrera, razon)
+    
     if (cedula and nombre and edad and carrera and razon):
+        estudiante = Estudiante(cedula, nombre, edad, carrera, razon)
         if cola.Insertar(estudiante):
             dibujar_cola()
             estudiante.mostrar_informacion()
@@ -75,7 +83,7 @@ def insertar():
             messagebox.showinfo("Info", "Estudiante agregado a la cola.")
             cola.MostrarContenido()
         else:
-            messagebox.showerror("Error", "¡La cola está llena (memoria)!")
+            messagebox.showerror("Error", "¡La cola está llena (memoria llena)!")
     else:
         messagebox.showwarning("Advertencia", "Ingresa un valor.")
     limpiar_entradas()
@@ -98,6 +106,20 @@ def remover():
         if estudiante_removido:
             messagebox.showinfo("Info", f"Se atendió al estudiante: {estudiante_removido.cedula}")
         dibujar_cola()
+# Método para contar cantidad de nodos y calcula si hay espacio para uno más
+def cola_cabe_en_canvas():
+    longitud_cola = 0
+    nodo = cola.Frente
+    while nodo:
+        longitud_cola += 1
+        nodo = nodo.prox
+    
+    separacion = 130  # Igual que en dibujar_cola()
+    espacio_necesario = separacion * (longitud_cola + 1)
+    ancho_canvas = canvas.winfo_width()
+
+    return espacio_necesario <= ancho_canvas
+
 
 #Creando el frame para el canvas
 frame_canvas = tk.Frame(ventana)
