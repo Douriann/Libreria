@@ -66,6 +66,7 @@ def insertar():
     if not cola_cabe_en_canvas():
         messagebox.showwarning("Error", "¡La cola está llena (memoria llena)!")
         canvas.create_text(375, 80, text="[Cola llena (memoria llena)]", font=("Arial", 14))
+        limpiar_entradas()
         return
     
     cedula = entry_cedula.get()
